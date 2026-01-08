@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JCI Logo Generator V2.5 (Final GitHub Version)</title>
+    <title>JCI Logo Generator V2.6 (Fixed Logic)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js"></script>
 
@@ -22,7 +22,7 @@
             color: #333;
         }
 
-        /* --- UI 樣式保留 --- */
+        /* --- UI 樣式 --- */
         .navbar {
             width: 100%;
             background-color: #0097D7;
@@ -111,26 +111,36 @@
         .btn-svg { background-color: #20c997; } 
         .btn-hint { font-size: 12px; color: #666; text-align: center; margin-top: -5px; }
 
+        /* --- 預覽區樣式修正 --- */
         .preview-container { 
             position: relative; 
             width: 600px; 
             max-width: 95%; 
-            padding: 20px; 
-            border: 1px solid #eee; 
-            background-color: #fff; 
-            box-sizing: border-box; 
+            /* 移除原本的 padding 和 border，讓 SVG 色塊直接撐滿 */
+            padding: 0; 
+            border: none;
+            background-color: transparent; 
             margin: 0 auto; 
             border-radius: 4px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            /* 移除容器陰影，改用 SVG 自身陰影 */
+            box-shadow: none;
             text-align: center;
-            min-height: 300px;
+            /* 移除最小高度，讓 SVG 決定高度 */
+            /* min-height: 300px; */ 
             display: flex;
             align-items: center;
             justify-content: center;
             transition: background-color 0.3s;
         }
         
-        #svg-preview-box svg { width: 100%; height: auto; display: block; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        /* 讓 SVG 本身帶有陰影和圓角，看起來像個區塊 */
+        #svg-preview-box svg { 
+            width: 100%; 
+            height: auto; 
+            display: block; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
+            border-radius: 8px;
+        }
         
         /* Footer */
         .footer { margin-top: auto; padding: 40px 20px; width: 100%; text-align: center; color: #666; font-size: 14px; line-height: 1.8; background-color: #fff; border-top: 1px solid #eee; }
@@ -149,27 +159,30 @@
         <div style="font-size:12px; color:#666; margin-top:10px;">(Please wait for fonts and assets)</div>
     </div>
 
-    <nav class="navbar">JCI Logo Generator V2.5</nav>
+    <nav class="navbar">JCI Logo Generator V2.6</nav>
     <div id="debug-console"></div>
 
     <div class="controls">
         <div class="input-group">
             <label>分會名稱 / Chapter Name (Line 1)</label>
-            <input type="text" id="chapterInput1" value="TAIWAN" oninput="updatePreview()">
+            <input type="text" id="chapterInput1" value="Dayuan" oninput="updatePreview()">
             <div id="lengthWarning" class="warning-msg">⚠️ 文字過長 (超出盾牌右緣)</div>
         </div>
         <div class="input-group">
             <label>分會名稱 / Chapter Name (Line 2)</label>
-            <input type="text" id="chapterInput2" value="DAYUAN" oninput="updatePreview()">
+            <input type="text" id="chapterInput2" value="" placeholder="(選填)" oninput="updatePreview()">
         </div>
         <div class="input-group">
             <label>Logo 樣式 / Style</label>
             <select id="logoSelect" onchange="updatePreview()">
                 <option value="New JCI Logo (SVG)_Primary.svg|#ffffff|jci-blue|white">Primary (白底藍字)</option>
                 <option value="New JCI Logo (SVG)_Secondary - White on JCI Blue.svg|#0097D7|white|white">Blue Background (藍底白字)</option>
-                <option value="New JCI Logo (SVG).svg|#1c1f2a|white|dark">Dark Background (去背全白)</option>
-                <option value="New JCI Logo (SVG)_Secondary - Inverted Color on JCI Black.svg|#000000|white|dark">Inverted (黑底白字)</option>
-                <option value="New JCI Logo (SVG)_Secondary - JCI Black.svg|#ffffff|black|light">Black Text (全黑)</option>
+                
+                <option value="New JCI Logo (SVG).svg|#1c1f2a|white|jci-black">Dark Background (去背全白)</option>
+                
+                <option value="New JCI Logo (SVG)_Secondary - Inverted Color on JCI Black.svg|#000000|white|white">Inverted (黑底白字)</option>
+                
+                <option value="New JCI Logo (SVG)_Secondary - JCI Black.svg|#ffffff|black|pure-white">Black Text (全黑)</option>
             </select>
         </div>
         <div class="input-group">
@@ -199,7 +212,7 @@
         </div>
         <div class="footer-block">
             <a href="https://www.jcidayuan.site/" target="_blank" class="footer-link">桃園市大園國際青年商會</a> 
-            <a href="https://www.facebook.com/zhenhui.lin/" target="_blank" class="footer-link-blue">2023年會長 林振暉</a> 製作<br>
+            <a href="https://www.facebook.com/zhenhui.lin/" target="_blank" class="footer-link-blue">2023年會長 林振暉 製作</a><br>
             Copyright &copy; 2026 Chenghui Lin. All rights reserved.
         </div>
         <div class="copyright-warning">
@@ -213,7 +226,7 @@
         let currentFont = null;
         let svgForDownload = "";
 
-        // === 參數設定 (保留你的 spacing: -0.3 等微調參數) ===
+        // === 參數設定 ===
         const LOGO_CONFIG = {
             baseWidth: 1000, 
             line1: { xPercent: 11.8, yPercent: 64.8, sizePx: 81, spacing: -0.3 },
@@ -229,7 +242,7 @@
             console.log(msg);
         }
 
-        // === 1. 初始化: 載入 GitHub 同目錄下的 TTF ===
+        // === 初始化 ===
         window.onload = function() {
             if (window.location.protocol === 'file:') {
                 alert("請使用 GitHub Pages 或 Local Server 開啟，否則無法讀取檔案。");
@@ -242,12 +255,12 @@
                 } else {
                     currentFont = font;
                     document.getElementById('loading-overlay').style.display = 'none';
-                    updatePreview(); // 字型載入完成後才執行預覽
+                    updatePreview();
                 }
             });
         };
 
-        // === 2. 核心功能: 更新預覽 ===
+        // === 核心功能: 更新預覽 ===
         async function updatePreview() {
             if (!currentFont) return;
 
@@ -255,19 +268,27 @@
             const fileName = val[0];
             const bgToRemove = val[1];
             const colorType = val[2];
-            const uiBg = val[3];
+            const uiBgMode = val[3]; // 新增：預覽容器背景模式
 
-            // 設定預覽框背景
+            // 修正 2 & 3 & 4 & 5: 設定預覽框背景邏輯
             const pc = document.getElementById('previewContainer');
-            if (uiBg === 'dark') pc.style.backgroundColor = '#333';
-            else if (uiBg === 'light') pc.style.backgroundColor = '#f0f0f0';
-            else pc.style.backgroundColor = '#fff';
+            pc.style.backgroundColor = 'transparent'; // 預設透明
+
+            if (uiBgMode === 'jci-black') {
+                // Style 3: 預覽時強制填滿 JCI BLACK
+                pc.style.backgroundColor = '#1C1F2A';
+            } else if (uiBgMode === 'pure-white') {
+                 // Style 5: 預覽時強制填滿純白 (取代原本的淡淡灰)
+                pc.style.backgroundColor = '#FFFFFF';
+            } 
+            // Style 4 (Inverted) 依指示設定為 white (透明/不填色)，
+            // 但因為背景被移除了，預覽會看不清白字，這是符合你「不用填色」的要求。
+            // 如果需要預覽看得到，請將 select option 中的 white 改為 jci-black
 
             const colors = { 'jci-blue': '#0097D7', 'white': '#FFFFFF', 'black': '#1C1F2A' };
             const textColor = colors[colorType] || '#0097D7';
 
             try {
-                // 讀取 GitHub 上的 SVG 模板
                 const resp = await fetch(fileName);
                 if (!resp.ok) throw new Error("File not found: " + fileName);
                 const rawSvg = await resp.text();
@@ -276,18 +297,14 @@
                 const doc = parser.parseFromString(rawSvg, "image/svg+xml");
                 const svgEl = doc.documentElement;
 
-                // 移除背景色 (去背)
+                // 修正 3 & 4: 移除背景色 (實現下載去背)
                 const shapes = svgEl.querySelectorAll('path, rect, polygon, circle');
                 shapes.forEach(el => {
                     const fill = el.getAttribute('fill');
                     if (fill && fill.toLowerCase() === bgToRemove.toLowerCase()) {
-                         // 對於 Inverted 模式下的黑色背景做例外處理，避免誤刪
-                         if (!(fileName.includes("Inverted") && bgToRemove === '#000000')) {
-                             el.style.display = 'none';
-                         }
-                         // 如果確實是背景，隱藏它
-                         if (fileName.includes("Primary") && bgToRemove === '#ffffff') el.style.display = 'none';
-                         if (fileName.includes("Logo (SVG).svg") && bgToRemove === '#1c1f2a') el.style.display = 'none';
+                         // 這裡移除了之前對 Inverted 模式的例外保護
+                         // 現在只要顏色對應到 bgToRemove，一律移除，確保下載是透明的
+                         el.style.display = 'none';
                     }
                 });
 
@@ -301,11 +318,10 @@
                 }
                 const scaleFactor = width / LOGO_CONFIG.baseWidth;
 
-                // --- 這裡是關鍵：使用你原本的 createPaths 邏輯 ---
+                // 產生文字路徑
                 const t1 = document.getElementById('chapterInput1').value;
                 const t2 = document.getElementById('chapterInput2').value;
 
-                // 使用 Glyphs 迴圈生成路徑 (保留 Kerning 和 Spacing)
                 const path1 = createAdvancedPath(t1, LOGO_CONFIG.line1, width, height, scaleFactor, textColor);
                 const path2 = createAdvancedPath(t2, LOGO_CONFIG.line2, width, height, scaleFactor, textColor);
 
@@ -328,7 +344,7 @@
             }
         }
 
-        // === 3. 高階路徑生成 (還原你的原始邏輯) ===
+        // === 高階路徑生成 (保留 Kerning) ===
         function createAdvancedPath(text, config, width, height, scale, color) {
             if (!text) return "";
             
@@ -359,27 +375,28 @@
             return combinedPath.toSVG(2);
         }
 
-        // === 4. 下載功能 (修復 Canvas 繪圖) ===
+        // === 下載功能 ===
         function downloadFile(type) {
             if (!svgForDownload) return;
-            const name = "JCI_" + (document.getElementById('chapterInput1').value || "Logo").replace(/[^a-zA-Z0-9]/g, "_");
+            // 如果 LINE 1 沒填，就用 JCI_Logo 當檔名
+            const chapterName = document.getElementById('chapterInput1').value.replace(/[^a-zA-Z0-9]/g, "_");
+            const name = "JCI_" + (chapterName || "Logo");
+            
             const btn = document.querySelector('.btn-' + type);
             const oldText = btn.innerText;
             btn.innerText = "Processing..."; btn.disabled = true;
 
-            setTimeout(() => { // 讓 UI 有機會更新文字
+            setTimeout(() => {
                 try {
                     if (type === 'svg') {
                         const blob = new Blob([svgForDownload], {type: "image/svg+xml;charset=utf-8"});
                         triggerDL(URL.createObjectURL(blob), name + ".svg");
                     } else {
-                        // PNG 下載
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
                         const scale = parseInt(document.getElementById('sizeSelect').value);
                         
                         const img = new Image();
-                        // 解決 Taint 問題
                         const svgBlob = new Blob([svgForDownload], {type: "image/svg+xml;charset=utf-8"});
                         const url = URL.createObjectURL(svgBlob);
 
