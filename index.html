@@ -79,7 +79,7 @@
         }
         input:focus, select:focus { border-color: #0097D7; outline: none; }
         
-        /* 警告訊息樣式 (支援多行) */
+        /* 警告訊息樣式 */
         .warning-msg {
             display: none; 
             color: #dc3545; 
@@ -192,7 +192,7 @@
 </head>
 <body>
 
-    <nav class="navbar">JCI Logo Generator V2.1</nav>
+    <nav class="navbar">JCI Logo Generator V2.0 SVG AVAILABLE</nav>
 
     <div id="debug-console">系統初始化中...</div>
 
@@ -207,15 +207,18 @@
         </div>
         <div class="input-group">
             <label>分會名稱 / Chapter Name (Line 2)</label>
-            <input type="text" id="chapterInput2" value="International" oninput="updatePreview()">
+            <input type="text" id="chapterInput2" value="" placeholder="(選填 / Optional)" oninput="updatePreview()">
         </div>
         <div class="input-group">
             <label>Logo 樣式 / Style</label>
             <select id="logoSelect" onchange="updatePreview()">
                 <option value="New JCI Logo (SVG)_Primary.svg|#ffffff|jci-blue">Primary (白底藍字)</option>
                 <option value="New JCI Logo (SVG)_Secondary - White on JCI Blue.svg|#0097D7|white">Blue Background (藍底白字)</option>
-                <option value="New JCI Logo (SVG).svg|#1c1f2a|white">Dark Background (深底白字)</option>
-                <option value="New JCI Logo (SVG)_Secondary - Inverted Color on JCI Black.svg|#000000|white">Inverted (黑底白字)</option>
+                
+                <option value="New JCI Logo (SVG).svg|#000000|white">Black Background (黑底白字)</option>
+                
+                <option value="New JCI Logo (SVG)_Secondary - Inverted Color on JCI Black.svg|#1c1f2a|white">Dark Background (深底白字 - JCI Black)</option>
+                
                 <option value="New JCI Logo (SVG)_Secondary - JCI Black.svg|#ffffff|black">Black Text (白底黑字)</option>
             </select>
         </div>
@@ -258,7 +261,7 @@
     </div>
 
     <script>
-        // ▼▼▼ 參數設定 (您的最佳配置) ▼▼▼
+        // ▼▼▼ 參數設定 ▼▼▼
         const LOGO_CONFIG = {
             baseWidth: 1000, 
             
@@ -266,14 +269,14 @@
                 xPercent: 11.8, 
                 yPercent: 64.8, 
                 sizePx: 81, 
-                spacing: -0.3   // 微縮 -0.3
+                spacing: -0.3 
             },
             
             line2: { 
                 xPercent: 11.8, 
                 yPercent: 73.6, 
                 sizePx: 81,
-                spacing: -0.3   // 微縮 -0.3
+                spacing: -0.3 
             }
         };
 
@@ -288,7 +291,6 @@
         }
 
         window.onload = function() {
-            // 安全檢查
             if (window.location.protocol === 'file:') {
                 log("⚠️ 警告：請使用 Live Server 或上傳至 GitHub Pages。");
                 alert("Please use Local Server or GitHub Pages to view this file.\n請勿直接雙擊打開，圖片會無法讀取！");
@@ -334,7 +336,7 @@
                     throw new Error("SVG Parse Error");
                 }
 
-                // 1. 去背
+                // 1. 去背邏輯
                 const elements = svgElDownload.querySelectorAll('path, rect, polygon, circle');
                 elements.forEach(el => {
                     const fill = el.getAttribute('fill');
@@ -356,7 +358,7 @@
                 }
                 const scaleFactor = width / LOGO_CONFIG.baseWidth;
 
-                // 3. 繪製文字 (含字距)
+                // 3. 繪製文字
                 const createPaths = (text, config) => {
                     if (!text) return "";
                     
@@ -413,7 +415,7 @@
                 
                 document.getElementById('svg-preview-box').innerHTML = svgStrPreview;
 
-                // 長度警告 (Width Warning)
+                // 長度警告
                 const w1 = currentFont.getAdvanceWidth(t1, LOGO_CONFIG.line1.sizePx * scaleFactor);
                 document.getElementById('lengthWarning').style.display = (w1 > width * 0.55) ? 'block' : 'none';
 
