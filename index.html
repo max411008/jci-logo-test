@@ -86,6 +86,7 @@
         .btn-svg { background-color: #20c997; } 
         .btn-hint { font-size: 12px; color: #666; text-align: center; margin-top: -5px; }
 
+        /* 預覽區：正方形 */
         .preview-container { 
             position: relative; 
             width: 500px; 
@@ -264,7 +265,7 @@
                     const fill = el.getAttribute('fill');
                     if (fill && fill.toLowerCase() === bgToRemove.toLowerCase()) {
                         if (fileName.includes("Inverted") && bgToRemove === '#000000') {
-                            // Inverted 保留預覽
+                            // 保留預覽
                         } else {
                             el.style.display = 'none';
                         }
@@ -273,10 +274,8 @@
 
                 let width = 1000, height = 665;
                 if (svgEl.hasAttribute('viewBox')) {
-                    const vbStr = svgEl.getAttribute('viewBox');
-                    const vb = vbStr.split(/[\s,]+/);
-                    width = parseFloat(vb[2]); 
-                    height = parseFloat(vb[3]);
+                    const vb = svgEl.getAttribute('viewBox').split(/[\s,]+/);
+                    width = parseFloat(vb[2]); height = parseFloat(vb[3]);
                 } else {
                     svgEl.setAttribute('viewBox', `0 0 ${width} ${height}`);
                 }
@@ -329,6 +328,7 @@
             return combinedPath.toSVG(2);
         }
 
+        // === 下載功能：針對手機優化 + 詳細錯誤處理 ===
         async function downloadFile(type) {
             if (!svgForDownload) return;
             const name = "JCI_" + (document.getElementById('chapterInput1').value || "Logo").replace(/[^a-zA-Z0-9]/g, "_");
@@ -337,55 +337,58 @@
             btn.innerText = "Processing..."; btn.disabled = true;
 
             try {
-                // 1. 強制修復 SVG 結構 (Fix for Download)
+                // 1. 處理 SVG 字串 (移除 Inverted 黑底 + 補 namespace)
                 let svgStringProcessed = svgForDownload;
-
-                // (A) Inverted 背景移除邏輯
                 const val = document.getElementById('logoSelect').value.split('|');
-                if (val[0].includes("Inverted")) {
+                const fileName = val[0];
+
+                if (fileName.includes("Inverted")) {
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(svgStringProcessed, "image/svg+xml");
                     const shapes = doc.querySelectorAll('rect, path, polygon');
                     shapes.forEach(el => {
                         const fill = el.getAttribute('fill');
                         if (fill && (fill.toLowerCase() === '#000000' || fill.toLowerCase() === 'black')) {
-                            el.remove(); 
+                            el.remove();
                         }
                     });
                     svgStringProcessed = new XMLSerializer().serializeToString(doc.documentElement);
                 }
 
-                // (B) 關鍵修復：強制注入 XML Namespace (如果缺失)
+                // 2. 強制補上 Namespace (避免瀏覽器解析錯誤)
                 if (!svgStringProcessed.includes('xmlns="http://www.w3.org/2000/svg"')) {
                     svgStringProcessed = svgStringProcessed.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
                 }
 
+                // 3. SVG 下載
                 if (type === 'svg') {
                     const blob = new Blob([svgStringProcessed], {type: "image/svg+xml;charset=utf-8"});
                     triggerDL(URL.createObjectURL(blob), name + ".svg");
-                } else {
+                } 
+                // 4. PNG 下載 (Canvas)
+                else {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
                     const scale = parseInt(document.getElementById('sizeSelect').value);
                     const img = new Image();
-                    
+                    img.crossOrigin = "anonymous"; // 嘗試避免 Taint，雖然 Blob URL 通常不需要
+
                     const svgBlob = new Blob([svgStringProcessed], {type: "image/svg+xml;charset=utf-8"});
                     const url = URL.createObjectURL(svgBlob);
 
-                    // (C) 增強型載入邏輯
+                    // 等待圖片載入
                     await new Promise((resolve, reject) => {
                         img.onload = resolve;
-                        img.onerror = (e) => reject("Image Load Error. SVG might be malformed.");
+                        img.onerror = () => reject("SVG 解析失敗，請檢查內容");
                         img.src = url;
                     });
 
-                    // (D) 強制解析 ViewBox 以取得寬高 (不依賴 img.width 有時會是 0 的問題)
+                    // 取得寬高
                     const vbMatch = svgStringProcessed.match(/viewBox="([^"]+)"/);
                     let baseW = 1000, baseH = 665;
                     if(vbMatch) {
-                        const vb = vbMatch[1].split(/[\s,]+/);
-                        baseW = parseFloat(vb[2]);
-                        baseH = parseFloat(vb[3]);
+                         const vb = vbMatch[1].split(/[\s,]+/);
+                         baseW = parseFloat(vb[2]); baseH = parseFloat(vb[3]);
                     }
 
                     canvas.width = baseW * scale;
@@ -397,17 +400,26 @@
 
                     const pngData = canvas.toDataURL("image/png");
 
-                    // 手機版相容性
+                    // ★★★ 手機版檢測 & 彈窗邏輯 ★★★
                     if (/Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-                        const win = window.open();
-                        win.document.write('<img src="' + pngData + '" style="width:100%"/>');
+                        alert("接下來會開新的視窗 請在新的視窗 長按圖片下載");
+                        const win = window.open("", "_blank");
+                        if (win) {
+                            win.document.write('<html><head><title>Long Press to Save</title></head><body style="margin:0; background:#eee; display:flex; justify-content:center; align-items:center; height:100vh;">');
+                            win.document.write('<img src="' + pngData + '" style="max-width:100%; height:auto; display:block; box-shadow:0 0 10px rgba(0,0,0,0.2);">');
+                            win.document.write('</body></html>');
+                            win.document.close();
+                        } else {
+                            alert("彈出視窗被封鎖，請允許本網站開啟視窗。");
+                        }
                     } else {
+                        // 電腦版直接下載
                         triggerDL(pngData, name + ".png");
                     }
                 }
             } catch (e) {
                 log("Download Error: " + e);
-                alert("下載失敗: " + e + "\n請查看下方 Console 訊息");
+                alert("下載失敗：" + e);
             } finally {
                 btn.innerText = oldText; btn.disabled = false;
             }
