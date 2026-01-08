@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JCI Logo Generator V2.8 (Square Layout)</title>
+    <title>JCI Logo Generator V2.0 SVG AVAILABLE</title>
     
     <script src="https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js"></script>
 
@@ -86,26 +86,23 @@
         .btn-svg { background-color: #20c997; } 
         .btn-hint { font-size: 12px; color: #666; text-align: center; margin-top: -5px; }
 
-        /* --- 預覽區樣式修正：強制正方形 --- */
+        /* --- 預覽區樣式：正方形 --- */
         .preview-container { 
             position: relative; 
-            width: 500px; /* 基準寬度 */
-            max-width: 90vw; /* 手機版不超過螢幕 */
-            aspect-ratio: 1 / 1; /* ★強制正方形比例★ */
-            
+            width: 500px; 
+            max-width: 90vw; 
+            aspect-ratio: 1 / 1; 
             padding: 0; 
             border: none;
             box-shadow: none;
             background-color: transparent; 
             margin: 0 auto; 
-            
             display: flex;
             align-items: center;
             justify-content: center;
             transition: background-color 0.3s;
         }
         
-        /* 讓 SVG 自適應這個正方形容器 */
         #svg-preview-box {
             width: 100%;
             height: 100%;
@@ -120,7 +117,6 @@
             width: auto; 
             height: auto; 
             display: block; 
-            /* 給 SVG 加點陰影，讓它看起來像個浮起來的 Logo */
             filter: drop-shadow(0px 5px 10px rgba(0,0,0,0.1));
         }
         
@@ -138,7 +134,7 @@
         <div style="font-size:12px; color:#666; margin-top:10px;">(Please wait for fonts and assets)</div>
     </div>
 
-    <nav class="navbar">JCI Logo Generator V2.8</nav>
+    <nav class="navbar">JCI Logo Generator V2.0 SVG AVAILABLE</nav>
     <div id="debug-console"></div>
 
     <div class="controls">
@@ -162,7 +158,7 @@
                 
                 <option value="New JCI Logo (SVG)_Secondary - Inverted Color on JCI Black.svg|#000000|white|transparent">Inverted (黑底白字)</option>
                 
-                <option value="New JCI Logo (SVG)_Secondary - JCI Black.svg|none|black|transparent">Black Text (全黑)</option>
+                <option value="New JCI Logo (SVG)_Secondary - JCI Black.svg|none|pure-black|transparent">Black Text (全黑)</option>
             </select>
         </div>
         <div class="input-group">
@@ -245,18 +241,19 @@
             const colorType = val[2];
             const uiBgMode = val[3]; 
 
-            // 設定預覽區塊背景 (Container)
+            // 預覽區背景
             const pc = document.getElementById('previewContainer');
             pc.style.backgroundColor = 'transparent'; // Reset
-
             if (uiBgMode === 'jci-black') {
-                // Style 3 (去背全白): 預覽時讓容器變黑，看起來像個黑色正方形塊
                 pc.style.backgroundColor = '#1C1F2A';
             }
-            // Style 4 (Inverted): uiBgMode=transparent，因為 SVG 本身有黑色背景，會顯示出黑色長方形。
-            // Style 5 (Black): uiBgMode=transparent，移除了之前的淺色，現在是透明(白底)。
 
-            const colors = { 'jci-blue': '#0097D7', 'white': '#FFFFFF', 'black': '#1C1F2A' };
+            const colors = { 
+                'jci-blue': '#0097D7', 
+                'white': '#FFFFFF', 
+                'black': '#1C1F2A',
+                'pure-black': '#000000'
+            };
             const textColor = colors[colorType] || '#0097D7';
 
             try {
@@ -268,21 +265,18 @@
                 const doc = parser.parseFromString(rawSvg, "image/svg+xml");
                 const svgEl = doc.documentElement;
 
-                // 移除下載時不要的背景 (Preview時如果 Inverted 模式則保留)
                 const shapes = svgEl.querySelectorAll('path, rect, polygon, circle');
                 shapes.forEach(el => {
                     const fill = el.getAttribute('fill');
                     if (fill && fill.toLowerCase() === bgToRemove.toLowerCase()) {
                         if (fileName.includes("Inverted") && bgToRemove === '#000000') {
-                            // Inverted 模式：預覽時保留黑底，下載時再移除
-                            // 這裡不動它
+                            // Inverted 保留預覽背景
                         } else {
                             el.style.display = 'none';
                         }
                     }
                 });
 
-                // 標準化 ViewBox
                 let width = 1000, height = 665;
                 if (svgEl.hasAttribute('viewBox')) {
                     const vb = svgEl.getAttribute('viewBox').split(/[\s,]+/);
@@ -292,7 +286,6 @@
                 }
                 const scaleFactor = width / LOGO_CONFIG.baseWidth;
 
-                // 文字路徑
                 const t1 = document.getElementById('chapterInput1').value;
                 const t2 = document.getElementById('chapterInput2').value;
 
@@ -306,11 +299,8 @@
                 const serializer = new XMLSerializer();
                 const finalSvgStr = serializer.serializeToString(svgEl);
                 document.getElementById('svg-preview-box').innerHTML = finalSvgStr;
-                
-                // 儲存原始字串 (此時 Inverted 還有背景，下面下載時會處理)
                 svgForDownload = finalSvgStr; 
 
-                // 長度警告
                 const w1 = currentFont.getAdvanceWidth(t1, LOGO_CONFIG.line1.sizePx * scaleFactor);
                 document.getElementById('lengthWarning').style.display = (w1 > width * 0.55) ? 'block' : 'none';
 
@@ -352,22 +342,18 @@
 
             setTimeout(() => {
                 try {
-                    // 下載前處理：如果是 Inverted 模式，要移除黑色背景
                     const val = document.getElementById('logoSelect').value.split('|');
                     const fileName = val[0];
                     let svgStringProcessed = svgForDownload;
 
                     if (fileName.includes("Inverted")) {
-                        // 簡單暴力的移除方式：把 fill="#000000" 的矩形移除或隱藏
-                        // 這裡使用 DOMParser 再解析一次最穩
                         const parser = new DOMParser();
                         const doc = parser.parseFromString(svgStringProcessed, "image/svg+xml");
                         const shapes = doc.querySelectorAll('rect, path, polygon');
                         shapes.forEach(el => {
                             const fill = el.getAttribute('fill');
-                            // 注意：SVG 文字也是白色的，背景是黑色 (#000000)
                             if (fill && (fill.toLowerCase() === '#000000' || fill.toLowerCase() === 'black')) {
-                                el.remove(); // 移除黑色背景
+                                el.remove(); 
                             }
                         });
                         svgStringProcessed = new XMLSerializer().serializeToString(doc.documentElement);
