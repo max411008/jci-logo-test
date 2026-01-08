@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JCI Logo Generator (V5.3 Debug)</title>
+    <title>JCI Logo Generator (V5.4 Spacing)</title>
     
     <script>
         window.onerror = function(msg, url, line) {
@@ -12,7 +12,6 @@
                 box.style.display = 'block';
                 box.innerHTML += '<div style="color:red; margin-bottom:5px;">❌ 錯誤: ' + msg + ' (Line: ' + line + ')</div>';
             }
-            // 防止白畫面，強制顯示介面
             document.querySelector('.controls').style.display = 'flex';
         };
     </script>
@@ -45,7 +44,6 @@
         .preview-container { position: relative; width: 550px; padding: 20px; max-width: 95%; border: 1px solid #eee; background-color: #fff; box-sizing: border-box; margin: 0 auto; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); text-align: center; min-height: 300px; display: flex; align-items: center; justify-content: center; }
         #svg-preview-box svg { width: 100%; height: auto; display: block; }
         
-        /* 除錯視窗樣式 */
         #debug-console { 
             display: none; width: 90%; max-width: 800px; background: #333; color: #fff; 
             padding: 15px; margin-bottom: 20px; border-radius: 8px; font-family: monospace; font-size: 12px; 
@@ -58,7 +56,7 @@
 </head>
 <body>
 
-    <nav class="navbar">JCI Logo Generator V5.3</nav>
+    <nav class="navbar">JCI Logo Generator V5.4</nav>
 
     <div id="debug-console">系統初始化中...</div>
 
@@ -108,17 +106,28 @@
     </div>
 
     <script>
-        // ▼▼▼ 參數設定 ▼▼▼
+        // ▼▼▼ 參數設定 (依據您的要求更新) ▼▼▼
         const LOGO_CONFIG = {
             baseWidth: 1000, 
-            line1: { xPercent: 11.8, yPercent: 64.8, sizePx: 81 },
-            line2: { xPercent: 11.8, yPercent: 73.6, sizePx: 81 }
+            
+            line1: { 
+                xPercent: 11.8,   // 左邊界
+                yPercent: 64.8,   // 頂部位置
+                sizePx: 81,       // 字體大小
+                spacing: -1       // 字距 (負數為縮減)
+            },
+            
+            line2: { 
+                xPercent: 11.8, 
+                yPercent: 73.6, 
+                sizePx: 81,
+                spacing: -1       // 字距
+            }
         };
 
         let currentFont = null;
         let svgForDownload = "";
 
-        // 日誌紀錄功能
         function log(msg) {
             const box = document.getElementById('debug-console');
             box.style.display = 'block';
@@ -127,22 +136,17 @@
         }
 
         window.onload = function() {
-            // 檢查是否為 file:// 協議
             if (window.location.protocol === 'file:') {
-                log("⚠️ 警告：您正在使用 file:// 模式打開檔案。");
-                log("瀏覽器會阻擋讀取 SVG 圖片 (CORS Error)。");
-                log("請使用 VS Code Live Server，或上傳到 GitHub Pages 測試。");
+                log("⚠️ 警告：請勿直接雙擊打開，請使用 Server 模式。");
                 alert("請勿直接雙擊打開 index.html，這會導致圖片無法讀取！\n請使用 Local Server 或上傳到網站空間。");
                 return;
             }
 
-            log("開始載入字型...");
             opentype.load('PlusJakartaSans-Bold.ttf', function(err, font) {
                 if (err) {
                     log("❌ 字型載入失敗！找不到 PlusJakartaSans-Bold.ttf");
                     alert("找不到字型檔 'PlusJakartaSans-Bold.ttf'");
                 } else {
-                    log("✅ 字型載入成功");
                     currentFont = font;
                     updatePreview();
                 }
@@ -162,11 +166,9 @@
             const textColor = colors[colorType] || '#0097D7';
 
             try {
-                log("正在讀取圖片: " + fileName);
                 const resp = await fetch(fileName);
                 if (!resp.ok) throw new Error("HTTP 錯誤: " + resp.status);
                 let rawSvg = await resp.text();
-                log("✅ 圖片讀取成功，開始解析...");
 
                 const parser = new DOMParser();
                 const docPreview = parser.parseFromString(rawSvg, "image/svg+xml");
@@ -175,7 +177,6 @@
                 const svgElPreview = docPreview.documentElement;
                 const svgElDownload = docDownload.documentElement;
 
-                // 檢查 SVG 解析是否成功
                 if (svgElPreview.nodeName === 'parsererror') {
                     throw new Error("SVG 解析失敗，檔案內容可能損毀");
                 }
@@ -202,15 +203,39 @@
                 }
                 const scaleFactor = width / LOGO_CONFIG.baseWidth;
 
-                // 3. 繪製文字 (通用函式)
+                // 3. 繪製文字 (含字距 spacing 邏輯)
                 const createPaths = (text, config) => {
                     if (!text) return "";
-                    const x = width * (config.xPercent / 100);
-                    const size = config.sizePx * scaleFactor;
-                    const baselineY = (height * (config.yPercent / 100)) + size; 
-                    const path = currentFont.getPath(text, x, baselineY, size);
-                    path.fill = textColor;
-                    return path.toSVG(2);
+                    
+                    const startX = width * (config.xPercent / 100);
+                    const fontSize = config.sizePx * scaleFactor;
+                    const baselineY = (height * (config.yPercent / 100)) + fontSize; 
+                    const extraSpacing = (config.spacing || 0) * scaleFactor;
+
+                    const combinedPath = new opentype.Path();
+                    let cursorX = startX;
+
+                    const glyphs = currentFont.stringToGlyphs(text);
+
+                    for (let i = 0; i < glyphs.length; i++) {
+                        const glyph = glyphs[i];
+                        const glyphPath = glyph.getPath(cursorX, baselineY, fontSize);
+                        combinedPath.extend(glyphPath);
+
+                        // 計算下一個字的位置
+                        // A. 字寬
+                        cursorX += glyph.advanceWidth * (fontSize / currentFont.unitsPerEm);
+                        // B. Kerning
+                        if (i < glyphs.length - 1) {
+                            const kerning = currentFont.getKerningValue(glyph, glyphs[i + 1]);
+                            cursorX += kerning * (fontSize / currentFont.unitsPerEm);
+                        }
+                        // C. 自訂間距 (Spacing)
+                        cursorX += extraSpacing;
+                    }
+
+                    combinedPath.fill = textColor;
+                    return combinedPath.toSVG(2);
                 };
 
                 const t1 = document.getElementById('chapterInput1').value;
@@ -219,14 +244,12 @@
                 const p1Svg = createPaths(t1, LOGO_CONFIG.line1);
                 const p2Svg = createPaths(t2, LOGO_CONFIG.line2);
 
-                // 4. 插入路徑 (使用最安全的 DOMParser 方法)
+                // 4. 插入路徑
                 const inject = (targetSvg) => {
                     const svgString = `<svg xmlns="http://www.w3.org/2000/svg">${p1Svg}${p2Svg}</svg>`;
                     const tempDoc = parser.parseFromString(svgString, "image/svg+xml");
                     const newPaths = tempDoc.querySelectorAll('path');
-                    
                     newPaths.forEach(p => {
-                        // 必須使用 importNode 或 cloneNode 避免文件權限問題
                         targetSvg.appendChild(document.importNode(p, true));
                     });
                 };
@@ -234,18 +257,16 @@
                 inject(svgElPreview);
                 inject(svgElDownload);
 
-                // 5. 序列化並顯示
+                // 5. 序列化
                 const serializer = new XMLSerializer();
                 const svgStrPreview = serializer.serializeToString(docPreview);
                 svgForDownload = serializer.serializeToString(docDownload);
                 
                 document.getElementById('svg-preview-box').innerHTML = svgStrPreview;
 
-                // 警告檢查
+                // 警告檢查 (這裡用簡單估算，因為 createPaths 邏輯較複雜)
                 const w1 = currentFont.getAdvanceWidth(t1, LOGO_CONFIG.line1.sizePx * scaleFactor);
                 document.getElementById('lengthWarning').style.display = (w1 > width * 0.55) ? 'block' : 'none';
-                
-                log("✅ 渲染完成");
 
             } catch (err) {
                 log("❌ 錯誤: " + err.message);
@@ -254,7 +275,7 @@
         }
 
         async function downloadFile(type) {
-            if (!svgForDownload) { log("尚未生成，無法下載"); return; }
+            if (!svgForDownload) return;
             const btn = document.querySelector(`.btn-${type}`);
             const originalText = btn.innerText;
             btn.innerText = "生成中..."; btn.disabled = true;
