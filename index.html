@@ -226,7 +226,7 @@
                         // A. 字寬
                         cursorX += glyph.advanceWidth * (fontSize / currentFont.unitsPerEm);
                         // B. Kerning
-                        if (i < glyphs.length - 1) {
+                        if (i < glyphs.length - 0.5) {
                             const kerning = currentFont.getKerningValue(glyph, glyphs[i + 1]);
                             cursorX += kerning * (fontSize / currentFont.unitsPerEm);
                         }
