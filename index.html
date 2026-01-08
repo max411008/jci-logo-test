@@ -12,6 +12,7 @@
                 box.style.display = 'block';
                 box.innerHTML += '<div style="color:red; margin-bottom:5px;">❌ 錯誤: ' + msg + ' (Line: ' + line + ')</div>';
             }
+            document.querySelector('.controls').style.display = 'flex';
         };
     </script>
 
@@ -22,7 +23,7 @@
         @font-face { font-family: 'Plus Jakarta Sans'; src: url('PlusJakartaSans-Bold.ttf') format('truetype'); font-weight: bold; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { 
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             background-color: #f8f9fa; 
             margin: 0; 
             padding: 0;
@@ -109,14 +110,14 @@
             transition: filter 0.2s;
         }
         .btn-base:hover { filter: brightness(1.1); }
-        .btn-base:disabled { background-color: #ccc !important; cursor: not-allowed; }
+        .btn-base:disabled { background-color: #ccc !important; cursor: wait; }
 
         .btn-png { background-color: #0097D7; }
         .btn-svg { background-color: #20c997; } 
         
         .btn-hint { font-size: 12px; color: #666; text-align: center; margin-top: -5px; }
 
-        /* --- 3. 預覽區 --- */
+        /* --- 3. 預覽區 (正方形強化) --- */
         .preview-container { 
             position: relative; 
             width: 500px; 
@@ -242,7 +243,7 @@
                 <option value="New JCI Logo (SVG)_Primary.svg|none|jci-blue|transparent">Primary (白底藍字)</option>
                 <option value="New JCI Logo (SVG)_Secondary - White on JCI Blue.svg|none|white|transparent">Blue Background (藍底白字)</option>
                 <option value="New JCI Logo (SVG).svg|#1c1f2a|white|jci-black">Dark Background (去背全白)</option>
-                <option value="New JCI Logo (SVG)_Secondary - Inverted Color on JCI Black.svg|#000000|white|transparent">Inverted (黑底白字)</option>
+                <option value="New JCI Logo (SVG)_Secondary - Inverted Color on JCI Black.svg|#1c1f2a|white|transparent">Inverted (黑底白字)</option>
                 <option value="New JCI Logo (SVG)_Secondary - JCI Black.svg|none|pure-black|transparent">Black Text (全黑)</option>
             </select>
         </div>
@@ -344,13 +345,15 @@
                 const doc = parser.parseFromString(rawSvg, "image/svg+xml");
                 const svgEl = doc.documentElement;
 
-                // 處理去背邏輯
+                // 處理去背與預覽邏輯
                 svgEl.querySelectorAll('path, rect, polygon, circle').forEach(el => {
                     const fill = el.getAttribute('fill');
                     if (fill && fill.toLowerCase() === bgToRemove.toLowerCase()) {
-                        // Inverted 模式預覽時保留黑底
-                        if (!(fileName.includes("Inverted") && bgToRemove === '#000000')) el.style.display = 'none';
+                        // Inverted 模式預覽時保留 JCI BLACK 背景
+                        if (!(fileName.includes("Inverted") && bgToRemove === '#1c1f2a')) el.style.display = 'none';
                     }
+                    // Style 3 去背全白：預覽容器有補色，所以要把 SVG 內部的背景拿掉
+                    if (uiBgMode === 'jci-black' && fill && fill.toLowerCase() === '#1c1f2a') el.style.display = 'none';
                 });
 
                 let width = 1000, height = 665;
@@ -363,7 +366,7 @@
                 const t1 = document.getElementById('chapterInput1').value;
                 const t2 = document.getElementById('chapterInput2').value;
 
-                // 文字路徑渲染 (核心字元循環)
+                // 文字路徑渲染邏輯 (保留 Kerning 與 Spacing)
                 const createAdvancedPath = (text, config) => {
                     if (!text) return "";
                     const startX = width * (config.xPercent / 100);
@@ -377,13 +380,10 @@
 
                     for (let i = 0; i < glyphs.length; i++) {
                         const glyph = glyphs[i];
-                        const glyphPath = glyph.getPath(cursorX, baselineY, fontSize);
-                        combinedPath.extend(glyphPath);
-
-                        cursorX += glyph.advanceWidth * (fontSize / currentFont.unitsPerEm);
+                        combinedPath.extend(glyph.getPath(cursorX, baselineY, fontSize));
+                        cursorX += (glyph.advanceWidth * (fontSize / currentFont.unitsPerEm));
                         if (i < glyphs.length - 1) {
-                            const kerning = currentFont.getKerningValue(glyph, glyphs[i + 1]);
-                            cursorX += kerning * (fontSize / currentFont.unitsPerEm);
+                            cursorX += currentFont.getKerningValue(glyph, glyphs[i + 1]) * (fontSize / currentFont.unitsPerEm);
                         }
                         cursorX += extraSpacing;
                     }
@@ -391,11 +391,8 @@
                     return combinedPath.toSVG(2);
                 };
 
-                const p1Svg = createAdvancedPath(t1, LOGO_CONFIG.line1);
-                const p2Svg = createAdvancedPath(t2, LOGO_CONFIG.line2);
-
                 const g = doc.createElementNS("http://www.w3.org/2000/svg", "g");
-                g.innerHTML = p1Svg + p2Svg;
+                g.innerHTML = createAdvancedPath(t1, LOGO_CONFIG.line1) + createAdvancedPath(t2, LOGO_CONFIG.line2);
                 svgEl.appendChild(g);
 
                 svgForDownload = new XMLSerializer().serializeToString(svgEl);
@@ -417,26 +414,26 @@
 
             try {
                 let svgProcessed = svgForDownload;
-                const val = document.getElementById('logoSelect').value.split('|');
-                
-                // 下載前處理：Inverted 模式移除黑底
-                if (val[0].includes("Inverted")) {
+                const parts = document.getElementById('logoSelect').value.split('|');
+                const bgToRemove = parts[1];
+
+                // PNG 下載強制去背邏輯 (精確剔除 JCI BLACK)
+                if (type === 'png' && bgToRemove !== 'none') {
                     const doc = new DOMParser().parseFromString(svgProcessed, "image/svg+xml");
                     doc.querySelectorAll('rect, path, polygon').forEach(el => {
                         const fill = el.getAttribute('fill');
-                        if (fill && (fill.toLowerCase() === '#000000' || fill.toLowerCase() === 'black')) el.remove();
+                        if (fill && (fill.toLowerCase() === '#1c1f2a' || fill.toLowerCase() === '#000000' || fill.toLowerCase() === 'black')) {
+                            el.remove();
+                        }
                     });
                     svgProcessed = new XMLSerializer().serializeToString(doc.documentElement);
                 }
 
                 // 補上 Namespace
-                if (!svgProcessed.includes('xmlns="http://www.w3.org/2000/svg"')) {
-                    svgProcessed = svgProcessed.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
-                }
+                if (!svgProcessed.includes('xmlns=')) svgProcessed = svgProcessed.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
 
                 if (type === 'svg') {
-                    const blob = new Blob([svgProcessed], {type: "image/svg+xml;charset=utf-8"});
-                    triggerDL(URL.createObjectURL(blob), name + ".svg");
+                    triggerDL(URL.createObjectURL(new Blob([svgProcessed], {type: "image/svg+xml;charset=utf-8"})), name + ".svg");
                 } else {
                     const scale = parseInt(document.getElementById('sizeSelect').value);
                     const img = new Image();
@@ -448,8 +445,7 @@
                     const vb = vbMatch ? vbMatch[1].split(/[\s,]+/) : [0, 0, 1000, 665];
                     
                     const canvas = document.createElement('canvas');
-                    canvas.width = parseFloat(vb[2]) * scale; 
-                    canvas.height = parseFloat(vb[3]) * scale;
+                    canvas.width = parseFloat(vb[2]) * scale; canvas.height = parseFloat(vb[3]) * scale;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                     URL.revokeObjectURL(url);
@@ -477,12 +473,8 @@
         }
 
         function triggerDL(url, name) {
-            const a = document.createElement('a'); 
-            a.href = url; 
-            a.download = name; 
-            document.body.appendChild(a); 
-            a.click(); 
-            document.body.removeChild(a); 
+            const a = document.createElement('a'); a.href = url; a.download = name;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
         }
     </script>
 </body>
