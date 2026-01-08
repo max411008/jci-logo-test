@@ -114,14 +114,14 @@
                 xPercent: 11.8,   // 左邊界
                 yPercent: 64.8,   // 頂部位置
                 sizePx: 81,       // 字體大小
-                spacing: -1       // 字距 (負數為縮減)
+                spacing: -0.3       // 字距 (負數為縮減)
             },
             
             line2: { 
                 xPercent: 11.8, 
                 yPercent: 73.6, 
                 sizePx: 81,
-                spacing: -1       // 字距
+                spacing: -0.3       // 字距
             }
         };
 
@@ -226,7 +226,7 @@
                         // A. 字寬
                         cursorX += glyph.advanceWidth * (fontSize / currentFont.unitsPerEm);
                         // B. Kerning
-                        if (i < glyphs.length - 0.5) {
+                        if (i < glyphs.length - 1) {
                             const kerning = currentFont.getKerningValue(glyph, glyphs[i + 1]);
                             cursorX += kerning * (fontSize / currentFont.unitsPerEm);
                         }
