@@ -86,7 +86,7 @@
         .btn-svg { background-color: #20c997; } 
         .btn-hint { font-size: 12px; color: #666; text-align: center; margin-top: -5px; }
 
-        /* --- 預覽區樣式：正方形 --- */
+        /* 預覽區：正方形 */
         .preview-container { 
             position: relative; 
             width: 500px; 
@@ -151,13 +151,9 @@
             <label>Logo 樣式 / Style</label>
             <select id="logoSelect" onchange="updatePreview()">
                 <option value="New JCI Logo (SVG)_Primary.svg|none|jci-blue|transparent">Primary (白底藍字)</option>
-                
                 <option value="New JCI Logo (SVG)_Secondary - White on JCI Blue.svg|none|white|transparent">Blue Background (藍底白字)</option>
-                
                 <option value="New JCI Logo (SVG).svg|#1c1f2a|white|jci-black">Dark Background (去背全白)</option>
-                
                 <option value="New JCI Logo (SVG)_Secondary - Inverted Color on JCI Black.svg|#000000|white|transparent">Inverted (黑底白字)</option>
-                
                 <option value="New JCI Logo (SVG)_Secondary - JCI Black.svg|none|pure-black|transparent">Black Text (全黑)</option>
             </select>
         </div>
@@ -241,9 +237,8 @@
             const colorType = val[2];
             const uiBgMode = val[3]; 
 
-            // 預覽區背景
             const pc = document.getElementById('previewContainer');
-            pc.style.backgroundColor = 'transparent'; // Reset
+            pc.style.backgroundColor = 'transparent'; 
             if (uiBgMode === 'jci-black') {
                 pc.style.backgroundColor = '#1C1F2A';
             }
@@ -270,7 +265,7 @@
                     const fill = el.getAttribute('fill');
                     if (fill && fill.toLowerCase() === bgToRemove.toLowerCase()) {
                         if (fileName.includes("Inverted") && bgToRemove === '#000000') {
-                            // Inverted 保留預覽背景
+                            // Inverted 保留背景預覽
                         } else {
                             el.style.display = 'none';
                         }
@@ -333,61 +328,81 @@
             return combinedPath.toSVG(2);
         }
 
-        function downloadFile(type) {
+        // === 下載功能：還原 V4.8 穩定版邏輯 ===
+        // 包含 Mobile Check 與 Promise 載入
+        async function downloadFile(type) {
             if (!svgForDownload) return;
             const name = "JCI_" + (document.getElementById('chapterInput1').value || "Logo").replace(/[^a-zA-Z0-9]/g, "_");
             const btn = document.querySelector('.btn-' + type);
             const oldText = btn.innerText;
             btn.innerText = "Processing..."; btn.disabled = true;
 
-            setTimeout(() => {
-                try {
-                    const val = document.getElementById('logoSelect').value.split('|');
-                    const fileName = val[0];
-                    let svgStringProcessed = svgForDownload;
+            try {
+                // 1. 處理 SVG 字串 (移除 Inverted 黑底)
+                const val = document.getElementById('logoSelect').value.split('|');
+                const fileName = val[0];
+                let svgStringProcessed = svgForDownload;
 
-                    if (fileName.includes("Inverted")) {
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(svgStringProcessed, "image/svg+xml");
-                        const shapes = doc.querySelectorAll('rect, path, polygon');
-                        shapes.forEach(el => {
-                            const fill = el.getAttribute('fill');
-                            if (fill && (fill.toLowerCase() === '#000000' || fill.toLowerCase() === 'black')) {
-                                el.remove(); 
-                            }
-                        });
-                        svgStringProcessed = new XMLSerializer().serializeToString(doc.documentElement);
-                    }
-
-                    if (type === 'svg') {
-                        const blob = new Blob([svgStringProcessed], {type: "image/svg+xml;charset=utf-8"});
-                        triggerDL(URL.createObjectURL(blob), name + ".svg");
-                    } else {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        const scale = parseInt(document.getElementById('sizeSelect').value);
-                        const img = new Image();
-                        const svgBlob = new Blob([svgStringProcessed], {type: "image/svg+xml;charset=utf-8"});
-                        const url = URL.createObjectURL(svgBlob);
-
-                        img.onload = function() {
-                            const vb = svgStringProcessed.match(/viewBox="[^"]+\s[^"]+\s([^"]+)\s([^"]+)"/);
-                            const baseW = vb ? parseFloat(vb[1]) : 1000;
-                            const baseH = vb ? parseFloat(vb[2]) : 665;
-                            canvas.width = baseW * scale;
-                            canvas.height = baseH * scale;
-                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                            triggerDL(canvas.toDataURL("image/png"), name + ".png");
-                            URL.revokeObjectURL(url);
-                        };
-                        img.src = url;
-                    }
-                } catch(e) {
-                    log("Download Error: " + e);
-                } finally {
-                    btn.innerText = oldText; btn.disabled = false;
+                if (fileName.includes("Inverted")) {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(svgStringProcessed, "image/svg+xml");
+                    const shapes = doc.querySelectorAll('rect, path, polygon');
+                    shapes.forEach(el => {
+                        const fill = el.getAttribute('fill');
+                        if (fill && (fill.toLowerCase() === '#000000' || fill.toLowerCase() === 'black')) {
+                            el.remove();
+                        }
+                    });
+                    svgStringProcessed = new XMLSerializer().serializeToString(doc.documentElement);
                 }
-            }, 50);
+
+                // 2. 執行下載
+                if (type === 'svg') {
+                    const blob = new Blob([svgStringProcessed], {type: "image/svg+xml;charset=utf-8"});
+                    triggerDL(URL.createObjectURL(blob), name + ".svg");
+                } else {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const scale = parseInt(document.getElementById('sizeSelect').value);
+                    const img = new Image();
+                    
+                    const svgBlob = new Blob([svgStringProcessed], {type: "image/svg+xml;charset=utf-8"});
+                    const url = URL.createObjectURL(svgBlob);
+
+                    // 使用 Promise 等待圖片載入 (V4.8 風格)
+                    await new Promise((resolve, reject) => {
+                        img.onload = resolve;
+                        img.onerror = reject;
+                        img.src = url;
+                    });
+
+                    // 繪製
+                    const vb = svgStringProcessed.match(/viewBox="[^"]+\s[^"]+\s([^"]+)\s([^"]+)"/);
+                    const baseW = vb ? parseFloat(vb[1]) : 1000;
+                    const baseH = vb ? parseFloat(vb[2]) : 665;
+                    canvas.width = baseW * scale;
+                    canvas.height = baseH * scale;
+                    
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    URL.revokeObjectURL(url);
+
+                    const pngData = canvas.toDataURL("image/png");
+
+                    // 手機版相容性檢查 (V4.8 特徵)
+                    if (/Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                        const win = window.open();
+                        win.document.write('<img src="' + pngData + '" style="width:100%"/>');
+                    } else {
+                        triggerDL(pngData, name + ".png");
+                    }
+                }
+            } catch (e) {
+                log("Download Error: " + e.message);
+                alert("下載發生錯誤，請檢查 console");
+            } finally {
+                btn.innerText = oldText; btn.disabled = false;
+            }
         }
 
         function triggerDL(url, name) {
