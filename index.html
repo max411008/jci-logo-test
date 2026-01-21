@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JCI Logo Generator v3.1</title>
+    <title>JCI Logo Generator v3.2</title>
     
     <script>
         window.onerror = function(msg, url, line) {
@@ -38,7 +38,6 @@
             min-height: 100vh; color: #333;
         }
 
-        /* Navbar */
         .navbar {
             width: 100%; background-color: #0097D7; color: white;
             padding: 12px 0; text-align: center; font-weight: bold;
@@ -48,7 +47,6 @@
         .nav-main { font-size: 20px; display: block; }
         .nav-sub { font-size: 13px; opacity: 0.9; letter-spacing: 1px; font-weight: normal; }
 
-        /* Controls Container */
         .controls { 
             background: white; padding: 20px; border-radius: 16px; 
             box-shadow: 0 8px 20px rgba(0,0,0,0.06); 
@@ -56,7 +54,6 @@
             margin-bottom: 20px; max-width: 600px; width: 90%;
         }
 
-        /* 模式切換按鈕 */
         .mode-switch-container {
             display: flex; background: #f1f3f5; padding: 4px; border-radius: 8px;
         }
@@ -66,7 +63,6 @@
         }
         .mode-btn.active { background-color: #0097D7; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
-        /* 輸入區改為垂直堆疊 (解決輸入框太小問題) */
         .input-stack {
             display: flex; flex-direction: column; gap: 12px; width: 100%;
         }
@@ -76,7 +72,7 @@
         label { font-size: 13px; font-weight: 700; color: #555; margin-left: 2px; display: flex; justify-content: space-between; }
         
         input, select { 
-            padding: 12px; font-size: 16px; /* 加大字體方便輸入 */
+            padding: 12px; font-size: 16px; 
             border: 1px solid #e0e0e0; border-radius: 8px; width: 100%; background-color: #fdfdfd;
             transition: border-color 0.2s;
         }
@@ -87,7 +83,6 @@
             background-color: #fff5f5; padding: 8px; border-radius: 4px; border: 1px solid #ffcccc;
         }
         
-        /* 按鈕組 */
         .btn-group-vertical { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 10px; }
         .btn-base {
             padding: 0 20px; font-size: 15px; font-weight: bold; color: white;
@@ -100,7 +95,6 @@
         .btn-svg { background-color: #20c997; } 
         .btn-hint { font-size: 12px; color: #888; text-align: center; margin-top: -5px; }
 
-        /* Preview Area */
         .preview-wrapper {
             width: 100%; max-width: 600px; margin: 0 auto;
             text-align: center;
@@ -119,7 +113,6 @@
         #svg-preview-box { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
         #svg-preview-box svg { width: 100%; height: 100%; display: block; }
 
-        /* Footer */
         .footer { margin-top: auto; padding: 40px 20px; width: 100%; text-align: center; color: #666; font-size: 13px; line-height: 1.6; border-top: 1px solid #eee; background: white; }
         .footer-link-blue { color: #0097D7; text-decoration: none; font-weight: bold; }
         
@@ -136,7 +129,7 @@
     <div id="loading-overlay"><div>系統載入中...<br><span style="font-size:12px;color:#999">Loading Fonts...</span></div></div>
 
     <nav class="navbar">
-        <span class="nav-main">JCI Logo Generator v3.1</span>
+        <span class="nav-main">JCI Logo Generator v3.2</span>
         <span class="nav-sub">Smart Layout Edition</span>
     </nav>
 
@@ -208,7 +201,7 @@
 
     <script>
         // ==========================================
-        // ★★★ CONFIG 設定區域 (v3.1) ★★★
+        // ★★★ CONFIG 設定區域 (v3.2) ★★★
         // ==========================================
         const CONFIG = {
             baseWidth: 1000,
@@ -223,16 +216,15 @@
 
             // 2. 台灣總會 (紅線演算法)
             taiwan: {
-                // 起始點 (J的左側)
                 startXPercent: 11.9,
                 
-                // ★★★ 關鍵設定：紅線終點 (盾牌尖端) ★★★
-                // 根據圖片分析，盾牌尖端大約在 69.5% 的位置
-                limitXPercent: 69.5, 
+                // ★★★ 修改處：紅線終點 (盾牌尖端) ★★★
+                // 調整到 74.5% 以對齊盾牌尖端
+                limitXPercent: 74.5, 
 
-                // 初始標準大小 (字少時以此為準)
-                line1: { yPercent: 66.0, sizePx: 70 }, // 英文
-                line2: { yPercent: 76.0, sizePx: 58 }, // 中文
+                // ★★★ 修改處：字體大小改為 81 (同世界總會) ★★★
+                line1: { yPercent: 66.0, sizePx: 81 }, // 英文原本 70 -> 改 81
+                line2: { yPercent: 76.0, sizePx: 81 }, // 中文原本 58 -> 改 81
                 
                 defaultText1: "Dayuan, Taiwan",
                 defaultText2: "桃園市大園國際青年商會"
@@ -275,7 +267,6 @@
             if(mode === 'taiwan') {
                 document.getElementById('label-line1').innerText = "分會英文名稱 (English)";
                 document.getElementById('label-line2').innerText = "分會中文名稱 (Chinese)";
-                // 台灣模式隱藏「字太長」警告，因為我們會自動縮放
                 document.getElementById('lengthWarning').style.display = 'none';
             } else {
                 document.getElementById('label-line1').innerText = "分會名稱 (Line 1)";
@@ -303,7 +294,6 @@
                 const doc = parser.parseFromString(rawSvg, "image/svg+xml");
                 const svgEl = doc.documentElement;
 
-                // 預覽去背
                 svgEl.querySelectorAll('path, rect, polygon, circle').forEach(el => {
                     const fill = el.getAttribute('fill');
                     if (fill && fill.toLowerCase() === bgToRemove.toLowerCase()) {
@@ -312,7 +302,6 @@
                     if (uiBgMode === 'jci-black' && fill && fill.toLowerCase() === '#1c1f2a') el.style.display = 'none';
                 });
 
-                // 尺寸計算
                 let width = 1000, height = 665;
                 if (svgEl.hasAttribute('viewBox')) {
                     const vb = svgEl.getAttribute('viewBox').split(/[\s,]+/);
@@ -324,37 +313,28 @@
                 const t2 = document.getElementById('chapterInput2').value;
                 const settings = CONFIG[currentMode];
 
-                // 準備產生文字的容器
                 const g = doc.createElementNS("http://www.w3.org/2000/svg", "g");
 
-                // --- 演算法分歧 ---
                 if (currentMode === 'world') {
-                    // === 世界模式：固定大小，靠左/中 (原邏輯) ===
                     const font1 = fontEn;
                     const p1 = createStandardPath(t1, settings.line1, font1, width, height, scaleFactor, textColor);
                     const p2 = createStandardPath(t2, settings.line2, font1, width, height, scaleFactor, textColor);
                     g.innerHTML = p1 + p2;
 
-                    // 警告偵測
                     const w1 = font1.getAdvanceWidth(t1, settings.line1.sizePx * scaleFactor);
                     document.getElementById('lengthWarning').style.display = (w1 > width * 0.55) ? 'block' : 'none';
 
                 } else {
-                    // === 台灣模式：紅線對齊演算法 ===
                     document.getElementById('lengthWarning').style.display = 'none';
                     
-                    const font1 = fontEn; // 英文
-                    const font2 = fontTw; // 中文
+                    const font1 = fontEn; 
+                    const font2 = fontTw; 
 
-                    // 計算目標寬度 (紅線 - 起點)
                     const startX = width * (settings.startXPercent / 100);
                     const limitX = width * (settings.limitXPercent / 100);
                     const targetWidth = limitX - startX;
 
-                    // 生成 Line 1 (英文) - 智慧縮放
                     const p1 = createSmartFitPath(t1, settings.line1, font1, startX, height, scaleFactor, targetWidth, textColor);
-                    
-                    // 生成 Line 2 (中文) - 智慧縮放
                     const p2 = createSmartFitPath(t2, settings.line2, font2, startX, height, scaleFactor, targetWidth, textColor);
 
                     g.innerHTML = p1 + p2;
@@ -369,49 +349,36 @@
             }
         }
 
-        // --- Helper: 世界模式標準渲染 ---
         function createStandardPath(text, config, font, width, height, scale, color) {
             if (!text) return "";
             const startX = width * (config.xPercent / 100);
             const fontSize = config.sizePx * scale;
             const baselineY = (height * (config.yPercent / 100)) + fontSize;
             const extraSpacing = (config.spacing || 0) * scale;
-
             return generatePathString(text, font, startX, baselineY, fontSize, extraSpacing, color);
         }
 
-        // --- Helper: 台灣模式智慧渲染 (紅線演算法) ---
         function createSmartFitPath(text, config, font, startX, height, scale, targetWidth, color) {
             if (!text) return "";
-
-            // 1. 先用標準大小測量寬度
             const stdFontSize = config.sizePx * scale;
             const rawWidth = font.getAdvanceWidth(text, stdFontSize);
-
             let finalFontSize = stdFontSize;
             let finalSpacing = 0;
 
             if (rawWidth < targetWidth) {
-                // 情境 A: 字少 -> 固定字體，拉大間距 (Justify)
-                // 計算需要補多少空白
                 const gap = targetWidth - rawWidth;
                 const charCount = text.length;
                 if (charCount > 1) {
                     finalSpacing = gap / (charCount - 1);
                 }
             } else {
-                // 情境 B: 字多 -> 間距為 0，縮小字體 (Scale Down)
-                // 計算縮放比例
                 const ratio = targetWidth / rawWidth;
                 finalFontSize = stdFontSize * ratio;
             }
-
-            const baselineY = (height * (config.yPercent / 100)) + stdFontSize; // Y軸位置維持標準參考點，避免字變小後往上跑
-            
+            const baselineY = (height * (config.yPercent / 100)) + stdFontSize; 
             return generatePathString(text, font, startX, baselineY, finalFontSize, finalSpacing, color);
         }
 
-        // --- 通用路徑生成 (含 Kerning) ---
         function generatePathString(text, font, x, y, fontSize, spacing, color) {
             const combinedPath = new opentype.Path();
             let cursorX = x;
@@ -420,23 +387,16 @@
             for (let i = 0; i < glyphs.length; i++) {
                 const glyph = glyphs[i];
                 combinedPath.extend(glyph.getPath(cursorX, y, fontSize));
-                
-                // 移動游標
                 cursorX += (glyph.advanceWidth * (fontSize / font.unitsPerEm));
-                
-                // 加入 Kerning (字距微調)
                 if (i < glyphs.length - 1) {
                     cursorX += font.getKerningValue(glyph, glyphs[i + 1]) * (fontSize / font.unitsPerEm);
                 }
-                
-                // 加入額外間距 (Spacing)
                 cursorX += spacing;
             }
             combinedPath.fill = color;
             return combinedPath.toSVG(2);
         }
 
-        // --- 下載邏輯 ---
         async function downloadFile(type) {
             if (!svgForDownload) return;
             const name = "JCI_" + (document.getElementById('chapterInput1').value || "Logo").replace(/[^a-zA-Z0-9]/g, "_");
@@ -483,7 +443,6 @@
                     URL.revokeObjectURL(url);
                     const pngData = canvas.toDataURL("image/png");
 
-                    // 手機下載處理
                     if (/Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
                         const win = window.open();
                         win.document.write('<img src="' + pngData + '" style="width:100%"/>');
