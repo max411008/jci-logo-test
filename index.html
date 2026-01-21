@@ -85,6 +85,7 @@
             background-color: #fff5f5; padding: 8px; border-radius: 4px; border: 1px solid #ffcccc;
         }
         
+        /* 下載按鈕組 */
         .btn-group-vertical { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 10px; }
         .btn-base {
             padding: 0 20px; font-size: 15px; font-weight: bold; color: white;
@@ -155,7 +156,6 @@
         .log-tag { font-size: 11px; padding: 2px 6px; border-radius: 4px; color: white; vertical-align: middle; }
         .tag-feat { background: #20c997; } 
         .tag-init { background: #6c757d; } 
-        
         .log-desc { margin-top: 5px; font-size: 14px; color: #555; line-height: 1.6; }
         .log-desc ul { margin: 5px 0 0 20px; padding: 0; }
         .log-desc li { margin-bottom: 3px; }
@@ -292,7 +292,7 @@
 
     <script>
         // ==========================================
-        // ★★★ CONFIG (v3.0 最終定案版) ★★★
+        // ★★★ CONFIG (v3.0 最終參數鎖定) ★★★
         // ==========================================
         const CONFIG = {
             baseWidth: 1000,
@@ -305,17 +305,17 @@
                 defaultText2: ""
             },
 
-            // 2. 台灣總會 (參數分離設定)
+            // 2. 台灣總會 (參數鎖定)
             taiwan: {
-                // ★ 英文設定 (Line 1)
+                // ★ 英文設定
                 line1: { 
-                    startX: 11.8,   // 英文起始位置
+                    startX: 11.85,   // 英文起始位置
                     limitX: 74.9,   // 英文邊界位置
-                    yPercent: 66.2, 
-                    sizePx: 73 
+                    yPercent: 65.2, 
+                    sizePx: 74 
                 }, 
                 
-                // ★ 中文設定 (Line 2)
+                // ★ 中文設定
                 line2: { 
                     startX: 12.2,   // 中文起始位置
                     limitX: 75.2,   // 中文邊界位置
@@ -323,8 +323,8 @@
                     sizePx: 56 
                 }, 
                 
-                defaultText1: "Dayuan,Taiwan",
-                defaultText2: "桃園市大園國際青年商會"
+                defaultText1: "Hsinchu, Taiwan",
+                defaultText2: "新竹市新竹國際青年商會"
             }
         };
 
@@ -335,19 +335,11 @@
         let svgForDownload = "";
 
         // Modal 視窗控制
-        function openModal() {
-            document.getElementById('devLogModal').style.display = 'flex';
-            document.body.style.overflow = 'hidden'; 
-        }
-        function closeModalBtn() {
-            document.getElementById('devLogModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-        function closeModal(e) {
-            if (e.target.id === 'devLogModal') closeModalBtn();
-        }
+        function openModal() { document.getElementById('devLogModal').style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+        function closeModalBtn() { document.getElementById('devLogModal').style.display = 'none'; document.body.style.overflow = 'auto'; }
+        function closeModal(e) { if (e.target.id === 'devLogModal') closeModalBtn(); }
 
-        // 載入字體與初始化
+        // 載入字體與初始化 (含進度顯示)
         window.onload = function() {
             let loadedCount = 0;
             const totalFonts = 3;
@@ -372,6 +364,7 @@
                 }
             };
 
+            // 確保路徑正確
             opentype.load('PlusJakartaSans-Bold.ttf', function(err, font) {
                 if (err) updateStatus('PlusJakartaSans', false);
                 else { fontWorld = font; updateStatus('PlusJakartaSans', true); }
@@ -580,17 +573,20 @@
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                     URL.revokeObjectURL(url);
-                    const pngData = canvas.toDataURL("image/png");
-
-                    if (/Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-                        const win = window.open();
-                        win.document.write('<img src="' + pngData + '" style="width:100%"/>');
-                    } else { 
-                        triggerDL(pngData, name + ".png"); 
-                    }
+                    
+                    // ★ 關鍵修正：使用 toBlob + createObjectURL (Safari 友善)
+                    canvas.toBlob(function(blob) {
+                        if(blob) {
+                            const blobUrl = URL.createObjectURL(blob);
+                            triggerDL(blobUrl, name + ".png");
+                        } else {
+                            alert("圖片生成失敗，請重試");
+                        }
+                    }, 'image/png');
                 }
             } catch (e) { 
                 console.error(e);
+                alert("下載發生錯誤: " + e.message);
             } finally { 
                 btn.innerText = oldText; btn.disabled = false; 
             }
@@ -599,8 +595,11 @@
         function triggerDL(url, name) {
             const a = document.createElement('a'); 
             a.href = url; a.download = name; 
-            document.body.appendChild(a); a.click(); 
+            document.body.appendChild(a); 
+            a.click(); 
             document.body.removeChild(a); 
+            // 延遲釋放，確保 iOS 有足夠時間處理 Blob
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
     </script>
 </body>
