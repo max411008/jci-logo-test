@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JCI Logo Generator v3.4</title>
+    <title>JCI Logo Generator v3.9</title>
     
     <script>
         window.onerror = function(msg, url, line) {
@@ -18,11 +18,19 @@
     <script src="https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js"></script>
 
     <style>
+        /* 1. 世界版專用字體 */
         @font-face { 
             font-family: 'Plus Jakarta Sans'; 
             src: url('PlusJakartaSans-Bold.ttf') format('truetype'); 
             font-weight: bold; 
         }
+        /* 2. 台灣版英文專用 */
+        @font-face { 
+            font-family: 'Arial Bold'; 
+            src: url('arialbd.ttf') format('truetype'); 
+            font-weight: bold; 
+        }
+        /* 3. 台灣版中文專用 */
         @font-face { 
             font-family: 'Noto Sans TC'; 
             src: url('NotoSansTC-Bold.ttf') format('truetype'); 
@@ -32,7 +40,7 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body { 
-            font-family: 'Plus Jakarta Sans', 'Noto Sans TC', sans-serif; 
+            font-family: 'Plus Jakarta Sans', 'Arial', 'Noto Sans TC', sans-serif; 
             background-color: #f8f9fa; margin: 0; padding: 0;
             display: flex; flex-direction: column; align-items: center; 
             min-height: 100vh; color: #333;
@@ -122,90 +130,17 @@
             display: flex; justify-content: center; align-items: center;
             flex-direction: column; font-weight: bold; color: #0097D7;
         }
-    </style>
-</head>
+    </script>
+</body>
 <body>
-
-    <div id="loading-overlay"><div>系統載入中...<br><span style="font-size:12px;color:#999">Loading Fonts...</span></div></div>
-
-    <nav class="navbar">
-        <span class="nav-main">JCI Logo Generator v3.4</span>
-        <span class="nav-sub">Smart Layout Edition</span>
-    </nav>
-
-    <div class="controls">
-        <div class="mode-switch-container">
-            <div id="mode-world" class="mode-btn active" onclick="switchMode('world')">🌍 世界總會版 (World)</div>
-            <div id="mode-taiwan" class="mode-btn" onclick="switchMode('taiwan')">🇹🇼 台灣總會版 (Taiwan)</div>
-        </div>
-
-        <div class="input-stack">
-            <div class="input-group">
-                <label id="label-line1">分會名稱 (Line 1)</label>
-                <input type="text" id="chapterInput1" value="Dayuan" oninput="updatePreview()">
-                <div id="lengthWarning" class="warning-msg">⚠️ 文字過長 (超出盾牌範圍)</div>
-            </div>
-            
-            <div class="input-group">
-                <label id="label-line2">分會名稱 (Line 2, 選填)</label>
-                <input type="text" id="chapterInput2" value="" placeholder="(選填)" oninput="updatePreview()">
-            </div>
-
-            <div style="display:flex; gap:10px;">
-                <div class="input-group" style="flex:1">
-                    <label>樣式 / Style</label>
-                    <select id="logoSelect" onchange="updatePreview()">
-                        <option value="New JCI Logo (SVG)_Primary.svg|none|jci-blue|transparent">Primary (白底藍字)</option>
-                        <option value="New JCI Logo (SVG)_Secondary - White on JCI Blue.svg|none|white|transparent">Blue Background (藍底白字)</option>
-                        <option value="New JCI Logo (SVG).svg|#1c1f2a|white|jci-black">Dark Background (去背全白)</option>
-                        <option value="New JCI Logo (SVG)_Secondary - Inverted Color on JCI Black.svg|#1c1f2a|white|transparent">Inverted (黑底白字)</option>
-                        <option value="New JCI Logo (SVG)_Secondary - JCI Black.svg|none|pure-black|transparent">Black Text (全黑)</option>
-                    </select>
-                </div>
-                <div class="input-group" style="flex:1">
-                    <label>大小 / Size</label>
-                    <select id="sizeSelect">
-                        <option value="1">小 (1x)</option>
-                        <option value="3" selected>中 (3x)</option>
-                        <option value="5">大 (5x)</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-        
-        <div class="btn-group-vertical">
-            <button class="btn-base btn-png" onclick="downloadFile('png')">下載 PNG 圖片</button>
-            <div class="btn-hint">(Transparent Background)</div>
-            <button class="btn-base btn-svg" onclick="downloadFile('svg')">下載 SVG 向量</button>
-            <div class="btn-hint">(Vector / Outlined Text)</div>
-        </div>
-    </div>
-
-    <div class="preview-wrapper">
-        <div class="preview-label">▼ 預覽區 (Preview Area) ▼</div>
-        <div class="preview-container" id="previewContainer">
-            <div id="svg-preview-box"></div>
-        </div>
-    </div>
-
-    <div class="footer">
-        <div class="footer-block">
-            Designed & Developed by <a href="#" class="footer-link-blue">Chenghui Lin</a><br>
-            (2023 President, JCI Dayuan)
-        </div>
-        <div class="footer-block">
-            <a href="#" class="footer-link-blue">桃園市大園國際青年商會</a> 製作
-        </div>
-    </div>
-
     <script>
         // ==========================================
-        // ★★★ CONFIG 設定區域 (v3.4 Revised) ★★★
+        // ★★★ CONFIG (v3.9 混合字體版) ★★★
         // ==========================================
         const CONFIG = {
             baseWidth: 1000,
             
-            // 1. 世界總會 (維持原樣)
+            // 1. 世界總會 (保持原樣，使用 Plus Jakarta Sans)
             world: {
                 line1: { xPercent: 11.8, yPercent: 64.8, sizePx: 81, spacing: -0.3 },
                 line2: { xPercent: 11.8, yPercent: 73.6, sizePx: 81, spacing: -0.3 },
@@ -213,17 +148,15 @@
                 defaultText2: ""
             },
 
-            // 2. 台灣總會 (依照疊圖精準調校)
+            // 2. 台灣總會 (依照照片調校，使用 Arial + Noto Sans TC)
             taiwan: {
                 startXPercent: 11.9,
                 limitXPercent: 74.5, 
 
-                // ★★★ 修正點：依照 Hsinchu 疊圖比例大幅縮小 ★★★
-                // 英文：原本 88 -> 改為 70 (更精緻)
-                line1: { yPercent: 67.5, sizePx: 70 }, 
+                // 英文 (Arial): 72px
+                line1: { yPercent: 67.5, sizePx: 72 }, 
                 
-                // 中文：原本 68 -> 改為 48 (標準副標題大小)
-                // yPercent 調整至 79.0，拉開垂直間距，避免太擁擠
+                // 中文 (Noto Sans TC): 48px
                 line2: { yPercent: 79.0, sizePx: 48 }, 
                 
                 defaultText1: "Dayuan, Taiwan",
@@ -232,26 +165,41 @@
         };
 
         let currentMode = 'world'; 
-        let fontEn = null; 
-        let fontTw = null; 
+        
+        // 定義三個字體變數
+        let fontWorld = null; // Plus Jakarta Sans
+        let fontTwEn = null;  // Arial
+        let fontTwCh = null;  // Noto Sans TC
+        
         let svgForDownload = "";
 
         window.onload = function() {
             let loadedCount = 0;
             const checkLoad = () => {
                 loadedCount++;
-                if(loadedCount >= 2) {
+                // 必須三個字體都載入完成才開始
+                if(loadedCount >= 3) {
                     document.getElementById('loading-overlay').style.display = 'none';
                     switchMode('world'); 
                 }
             };
 
+            // 1. 載入世界版字體 (Plus Jakarta Sans)
             opentype.load('PlusJakartaSans-Bold.ttf', function(err, font) {
-                if (err) alert("❌ 英文體載入失敗"); else { fontEn = font; checkLoad(); }
+                if (err) alert("❌ 載入失敗: PlusJakartaSans-Bold.ttf");
+                else { fontWorld = font; checkLoad(); }
             });
 
+            // 2. 載入台灣版英文 (Arial Bold)
+            opentype.load('arialbd.ttf', function(err, font) {
+                if (err) alert("❌ 載入失敗: arialbd.ttf");
+                else { fontTwEn = font; checkLoad(); }
+            });
+
+            // 3. 載入台灣版中文 (Noto Sans TC Bold)
             opentype.load('NotoSansTC-Bold.ttf', function(err, font) {
-                if (err) { fontTw = fontEn; checkLoad(); } else { fontTw = font; checkLoad(); }
+                if (err) alert("❌ 載入失敗: NotoSansTC-Bold.ttf");
+                else { fontTwCh = font; checkLoad(); }
             });
         };
 
@@ -276,7 +224,8 @@
         }
 
         async function updatePreview() {
-            if (!fontEn) return;
+            // 確保字體都載入了
+            if (!fontWorld || !fontTwEn || !fontTwCh) return;
             
             const parts = document.getElementById('logoSelect').value.split('|');
             const fileName = parts[0], bgToRemove = parts[1], colorType = parts[2], uiBgMode = parts[3];
@@ -316,26 +265,24 @@
                 const g = doc.createElementNS("http://www.w3.org/2000/svg", "g");
 
                 if (currentMode === 'world') {
-                    const font1 = fontEn;
-                    const p1 = createStandardPath(t1, settings.line1, font1, width, height, scaleFactor, textColor);
-                    const p2 = createStandardPath(t2, settings.line2, font1, width, height, scaleFactor, textColor);
+                    // ★ 世界版：使用 fontWorld (Plus Jakarta Sans)
+                    const p1 = createStandardPath(t1, settings.line1, fontWorld, width, height, scaleFactor, textColor);
+                    const p2 = createStandardPath(t2, settings.line2, fontWorld, width, height, scaleFactor, textColor);
                     g.innerHTML = p1 + p2;
 
-                    const w1 = font1.getAdvanceWidth(t1, settings.line1.sizePx * scaleFactor);
+                    const w1 = fontWorld.getAdvanceWidth(t1, settings.line1.sizePx * scaleFactor);
                     document.getElementById('lengthWarning').style.display = (w1 > width * 0.55) ? 'block' : 'none';
 
                 } else {
                     document.getElementById('lengthWarning').style.display = 'none';
                     
-                    const font1 = fontEn; 
-                    const font2 = fontTw; 
-
                     const startX = width * (settings.startXPercent / 100);
                     const limitX = width * (settings.limitXPercent / 100);
                     const targetWidth = limitX - startX;
 
-                    const p1 = createSmartFitPath(t1, settings.line1, font1, startX, height, scaleFactor, targetWidth, textColor);
-                    const p2 = createSmartFitPath(t2, settings.line2, font2, startX, height, scaleFactor, targetWidth, textColor);
+                    // ★ 台灣版：英文用 fontTwEn (Arial), 中文用 fontTwCh (Noto Sans TC)
+                    const p1 = createSmartFitPath(t1, settings.line1, fontTwEn, startX, height, scaleFactor, targetWidth, textColor);
+                    const p2 = createSmartFitPath(t2, settings.line2, fontTwCh, startX, height, scaleFactor, targetWidth, textColor);
 
                     g.innerHTML = p1 + p2;
                 }
