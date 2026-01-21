@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JCI Logo Generator v4.0</title>
+    <title>JCI Logo Generator v4.2</title>
     
     <script>
         window.onerror = function(msg, url, line) {
-            // 忽略一些無關緊要的 resize 錯誤
             if (msg.indexOf('ResizeObserver') !== -1) return;
             console.log('系統訊息: ' + msg);
         };
@@ -16,19 +15,16 @@
     <script src="https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js"></script>
 
     <style>
-        /* 1. 世界版專用字體 (Plus Jakarta Sans) */
         @font-face { 
             font-family: 'Plus Jakarta Sans'; 
             src: url('PlusJakartaSans-Bold.ttf') format('truetype'); 
             font-weight: bold; 
         }
-        /* 2. 台灣版英文專用 (Arial Bold) */
         @font-face { 
             font-family: 'Arial Bold'; 
             src: url('arialbd.ttf') format('truetype'); 
             font-weight: bold; 
         }
-        /* 3. 台灣版中文專用 (Noto Sans TC Bold) */
         @font-face { 
             font-family: 'Noto Sans TC'; 
             src: url('NotoSansTC-Bold.ttf') format('truetype'); 
@@ -77,19 +73,12 @@
         
         label { font-size: 13px; font-weight: 700; color: #555; margin-left: 2px; display: flex; justify-content: space-between; }
         
-        input[type="text"], select { 
+        input, select { 
             padding: 12px; font-size: 16px; 
             border: 1px solid #e0e0e0; border-radius: 8px; width: 100%; background-color: #fdfdfd;
             transition: border-color 0.2s;
         }
         input:focus, select:focus { border-color: #0097D7; outline: none; }
-
-        /* 微調滑桿樣式 */
-        .range-container {
-            display: flex; align-items: center; gap: 10px;
-        }
-        input[type="range"] { flex: 1; }
-        .number-display { width: 50px; text-align: center; padding: 5px; border: 1px solid #ddd; border-radius: 4px; }
         
         .warning-msg {
             display: none; color: #dc3545; font-size: 12px; margin-top: 4px;
@@ -142,7 +131,7 @@
     <div id="loading-overlay"><div>系統載入中...<br><span style="font-size:12px;color:#999">Loading Fonts... (3 files)</span></div></div>
 
     <nav class="navbar">
-        <span class="nav-main">JCI Logo Generator v4.0</span>
+        <span class="nav-main">JCI Logo Generator v4.2</span>
         <span class="nav-sub">Official & Safe Font Edition</span>
     </nav>
 
@@ -162,14 +151,6 @@
             <div class="input-group">
                 <label id="label-line2">分會名稱 (Line 2, 選填)</label>
                 <input type="text" id="chapterInput2" value="" placeholder="(選填)" oninput="updatePreview()">
-            </div>
-
-            <div class="input-group" id="line2-offset-group" style="display:none;">
-                <label>中文左右微調 (X Offset)</label>
-                <div class="range-container">
-                    <input type="range" id="offsetXRange" min="-100" max="100" value="0" oninput="syncOffset('range')">
-                    <input type="number" id="offsetXNum" class="number-display" value="0" oninput="syncOffset('num')">
-                </div>
             </div>
 
             <div style="display:flex; gap:10px;">
@@ -221,7 +202,7 @@
 
     <script>
         // ==========================================
-        // ★★★ CONFIG (v4.0 參數修正版) ★★★
+        // ★★★ CONFIG (v4.2 獨立設定版) ★★★
         // ==========================================
         const CONFIG = {
             baseWidth: 1000,
@@ -234,16 +215,23 @@
                 defaultText2: ""
             },
 
-            // 2. 台灣總會 (更新為您指定的參數)
+            // 2. 台灣總會 (參數分離設定)
             taiwan: {
-                startXPercent: 11.8,
-                limitXPercent: 74.7, 
-
-                // 英文 (Arial)
-                line1: { yPercent: 64.8, sizePx: 73 }, 
+                // ★ 英文設定 (Line 1)
+                line1: { 
+                    startX: 11.8,   // 英文起始位置
+                    limitX: 74.7,   // 英文邊界位置
+                    yPercent: 64.8, 
+                    sizePx: 73 
+                }, 
                 
-                // 中文 (Noto Sans TC)
-                line2: { yPercent: 73.0, sizePx: 55 }, 
+                // ★ 中文設定 (Line 2)
+                line2: { 
+                    startX: 11.8,   // 中文起始位置 (可獨立修改，例如改成 12.0)
+                    limitX: 74.7,   // 中文邊界位置
+                    yPercent: 73.0, 
+                    sizePx: 55 
+                }, 
                 
                 defaultText1: "Hsinchu, Taiwan",
                 defaultText2: "新竹市新竹國際青年商會"
@@ -257,18 +245,6 @@
         let fontTwCh = null;  // Noto Sans TC
         
         let svgForDownload = "";
-
-        // 同步滑桿與數字輸入框
-        function syncOffset(source) {
-            const range = document.getElementById('offsetXRange');
-            const num = document.getElementById('offsetXNum');
-            if (source === 'range') {
-                num.value = range.value;
-            } else {
-                range.value = num.value;
-            }
-            updatePreview();
-        }
 
         window.onload = function() {
             let loadedCount = 0;
@@ -305,22 +281,14 @@
             document.getElementById('chapterInput1').value = settings.defaultText1;
             document.getElementById('chapterInput2').value = settings.defaultText2;
 
-            const offsetGroup = document.getElementById('line2-offset-group');
             if(mode === 'taiwan') {
                 document.getElementById('label-line1').innerText = "分會英文名稱 (English)";
                 document.getElementById('label-line2').innerText = "分會中文名稱 (Chinese)";
                 document.getElementById('lengthWarning').style.display = 'none';
-                // 顯示微調控制器
-                if(offsetGroup) offsetGroup.style.display = 'block';
             } else {
                 document.getElementById('label-line1').innerText = "分會名稱 (Line 1)";
                 document.getElementById('label-line2').innerText = "分會名稱 (Line 2)";
-                // 隱藏微調控制器
-                if(offsetGroup) offsetGroup.style.display = 'none';
             }
-            // 重置位移
-            document.getElementById('offsetXRange').value = 0;
-            document.getElementById('offsetXNum').value = 0;
             
             updatePreview();
         }
@@ -334,7 +302,6 @@
             
             const parts = document.getElementById('logoSelect').value.split('|');
             const fileName = parts[0], bgToRemove = parts[1], colorType = parts[2], uiBgMode = parts[3];
-            const offsetX = parseInt(document.getElementById('offsetXRange').value) || 0; // 取得位移值
 
             document.getElementById('previewContainer').style.backgroundColor = (uiBgMode === 'jci-black') ? '#1C1F2A' : 'transparent';
             const colors = { 'jci-blue': '#0097D7', 'white': '#FFFFFF', 'black': '#1C1F2A', 'pure-black': '#000000' };
@@ -383,19 +350,19 @@
                 } else {
                     document.getElementById('lengthWarning').style.display = 'none';
                     
-                    const baseStartX = width * (settings.startXPercent / 100);
-                    const limitX = width * (settings.limitXPercent / 100);
+                    // ★ 獨立計算英文的寬度範圍
+                    const l1Start = width * (settings.line1.startX / 100);
+                    const l1Limit = width * (settings.line1.limitX / 100);
+                    const l1Target = l1Limit - l1Start;
                     
-                    // 英文維持不變
-                    const targetWidthEn = limitX - baseStartX;
-                    const p1 = createSmartFitPath(t1, settings.line1, fTwEn, baseStartX, height, scaleFactor, targetWidthEn, textColor);
-                    
-                    // 中文套用位移 (startX 加上 offsetX)
-                    // 注意：位移後，可用的寬度 (limitX - newStart) 也會改變，這裡自動處理
-                    const adjustedStartX = baseStartX + offsetX;
-                    const targetWidthCh = limitX - adjustedStartX;
-                    
-                    const p2 = createSmartFitPath(t2, settings.line2, fTwCh, adjustedStartX, height, scaleFactor, targetWidthCh, textColor);
+                    // ★ 獨立計算中文的寬度範圍
+                    const l2Start = width * (settings.line2.startX / 100);
+                    const l2Limit = width * (settings.line2.limitX / 100);
+                    const l2Target = l2Limit - l2Start;
+
+                    // 繪製路徑 (分別傳入各自的 Start, TargetWidth)
+                    const p1 = createSmartFitPath(t1, settings.line1, fTwEn, l1Start, height, scaleFactor, l1Target, textColor);
+                    const p2 = createSmartFitPath(t2, settings.line2, fTwCh, l2Start, height, scaleFactor, l2Target, textColor);
 
                     g.innerHTML = p1 + p2;
                 }
@@ -426,14 +393,15 @@
             let finalSpacing = 0;
 
             if (rawWidth < targetWidth) {
-                // 如果字數比較多但還是小於目標寬度，可能不需要撐滿
-                // 這裡保持原邏輯：不撐滿，只做左對齊
+                // ★ 恢復分散對齊功能 (Dispersion)
+                // 當文字長度小於目標寬度時，自動計算字距填滿
                 const gap = targetWidth - rawWidth;
                 const charCount = text.length;
-                // 如果需要自動分散對齊可打開下方邏輯，目前保持靠左
-                // if (charCount > 1) finalSpacing = gap / (charCount - 1);
+                if (charCount > 1) {
+                    finalSpacing = gap / (charCount - 1);
+                }
             } else {
-                // 如果超出範圍，縮小字體
+                // 超出寬度則縮小
                 const ratio = targetWidth / rawWidth;
                 finalFontSize = stdFontSize * ratio;
             }
