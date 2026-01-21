@@ -15,6 +15,7 @@
     <script src="https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js"></script>
 
     <style>
+        /* 字體定義 */
         @font-face { 
             font-family: 'Plus Jakarta Sans'; 
             src: url('PlusJakartaSans-Bold.ttf') format('truetype'); 
@@ -40,6 +41,7 @@
             min-height: 100vh; color: #333;
         }
 
+        /* 導覽列 */
         .navbar {
             width: 100%; background-color: #0097D7; color: white;
             padding: 12px 0; text-align: center; font-weight: bold;
@@ -49,6 +51,7 @@
         .nav-main { font-size: 20px; display: block; }
         .nav-sub { font-size: 13px; opacity: 0.9; letter-spacing: 1px; font-weight: normal; }
 
+        /* 控制面板 */
         .controls { 
             background: white; padding: 20px; border-radius: 16px; 
             box-shadow: 0 8px 20px rgba(0,0,0,0.06); 
@@ -65,13 +68,10 @@
         }
         .mode-btn.active { background-color: #0097D7; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
-        .input-stack {
-            display: flex; flex-direction: column; gap: 12px; width: 100%;
-        }
-        
+        .input-stack { display: flex; flex-direction: column; gap: 12px; width: 100%; }
         .input-group { display: flex; flex-direction: column; gap: 6px; width: 100%; }
         
-        label { font-size: 13px; font-weight: 700; color: #555; margin-left: 2px; display: flex; justify-content: space-between; }
+        label { font-size: 13px; font-weight: 700; color: #555; margin-left: 2px; }
         
         input, select { 
             padding: 12px; font-size: 16px; 
@@ -97,6 +97,7 @@
         .btn-svg { background-color: #20c997; } 
         .btn-hint { font-size: 12px; color: #888; text-align: center; margin-top: -5px; }
 
+        /* 預覽區 */
         .preview-wrapper {
             width: 100%; max-width: 600px; margin: 0 auto;
             text-align: center;
@@ -115,6 +116,7 @@
         #svg-preview-box { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
         #svg-preview-box svg { width: 100%; height: 100%; display: block; }
 
+        /* Footer & Modal */
         .footer { margin-top: auto; padding: 40px 20px; width: 100%; text-align: center; color: #666; font-size: 13px; line-height: 1.6; border-top: 1px solid #eee; background: white; }
         .footer-link-blue { color: #0097D7; text-decoration: none; font-weight: bold; }
         
@@ -124,11 +126,44 @@
             display: flex; justify-content: center; align-items: center;
             flex-direction: column; font-weight: bold; color: #0097D7;
         }
+
+        /* === 開發日誌 Modal 樣式 === */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5); z-index: 2000;
+            justify-content: center; align-items: center;
+            backdrop-filter: blur(3px);
+        }
+        .modal-box {
+            background: white; width: 90%; max-width: 600px; max-height: 80vh;
+            border-radius: 12px; padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            overflow-y: auto; position: relative;
+            font-family: 'Noto Sans TC', sans-serif; text-align: left;
+        }
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px;
+        }
+        .modal-title { font-size: 20px; font-weight: bold; color: #0097D7; }
+        .close-btn { background: none; border: none; font-size: 24px; color: #999; cursor: pointer; }
+        .close-btn:hover { color: #333; }
+        
+        .log-entry { margin-bottom: 20px; }
+        .log-date { font-size: 12px; color: #888; font-weight: bold; margin-bottom: 4px; display: block;}
+        .log-ver { font-size: 16px; font-weight: bold; color: #333; display: flex; align-items: center; gap: 8px;}
+        .log-tag { font-size: 11px; padding: 2px 6px; border-radius: 4px; color: white; vertical-align: middle; }
+        .tag-feat { background: #20c997; } 
+        .tag-init { background: #6c757d; } 
+        
+        .log-desc { margin-top: 5px; font-size: 14px; color: #555; line-height: 1.6; }
+        .log-desc ul { margin: 5px 0 0 20px; padding: 0; }
+        .log-desc li { margin-bottom: 3px; }
     </style>
 </head>
 <body>
 
-    <div id="loading-overlay"><div>系統載入中...<br><span style="font-size:12px;color:#999">Loading Fonts... (3 files)</span></div></div>
+    <div id="loading-overlay"><div>系統載入中...<br><span style="font-size:12px;color:#999">Initialize...</span></div></div>
 
     <nav class="navbar">
         <span class="nav-main">JCI Logo Generator v3.0</span>
@@ -198,6 +233,61 @@
         <div class="footer-block">
             <a href="#" class="footer-link-blue">桃園市大園國際青年商會</a> 製作
         </div>
+        <div style="margin-top: 15px; font-size: 12px;">
+            <a href="javascript:void(0)" onclick="openModal()" style="color:#999; text-decoration:none; border-bottom:1px dashed #ccc;">
+                📜 查看開發日誌 (Changelog)
+            </a>
+        </div>
+    </div>
+
+    <div id="devLogModal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div class="modal-title">🚀 開發演進日誌</div>
+                <button class="close-btn" onclick="closeModalBtn()">×</button>
+            </div>
+            <div class="modal-content">
+                <div class="log-entry">
+                    <span class="log-date">2026/01/15 - Present</span>
+                    <div class="log-ver"><span class="log-tag tag-feat">V3.0</span> 在地化與智慧排版</div>
+                    <div class="log-desc">
+                        解決台灣分會特有的「中英並列」排版難題。
+                        <ul>
+                            <li><strong>🇹🇼 台灣總會版：</strong>實作獨有的雙行排版，並針對中英文採用獨立座標系統，確保像素級對齊。</li>
+                            <li><strong>Smart Layout 引擎：</strong>開發紅線演算法，文字過長自動縮小，確保不超出盾牌邊界；並具備分散對齊功能。</li>
+                            <li><strong>字體優化：</strong>改用 Arial (英) 與 Noto Sans TC (中) 確保跨平台顯示一致且合法。</li>
+                        </ul>
+                    </div>
+                </div>
+                <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+                <div class="log-entry">
+                    <span class="log-date">2026/01/08</span>
+                    <div class="log-ver"><span class="log-tag tag-feat">V2.0</span> 向量革命</div>
+                    <div class="log-desc">
+                        為了應對大型輸出需求，捨棄 Canvas 改採 SVG 技術重寫核心。
+                        <ul>
+                            <li><strong>雙格式輸出：</strong>新增 .svg 向量檔下載，支援 AI 編輯。</li>
+                            <li><strong>畫質提升：</strong>解決 PNG 邊緣鋸齒問題，實現無限放大不失真。</li>
+                        </ul>
+                    </div>
+                </div>
+                <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+                <div class="log-entry">
+                    <span class="log-date">2025/12/04</span>
+                    <div class="log-ver"><span class="log-tag tag-init">V1.0</span> 原型誕生</div>
+                    <div class="log-desc">
+                        快速解決會友找不到去背 Logo 或顏色錯誤的痛點。
+                        <ul>
+                            <li>內建 JCI 官方 5 種標準配色。</li>
+                            <li>支援即時圖片生成 (PNG)。</li>
+                        </ul>
+                    </div>
+                </div>
+                <div style="margin-top:20px; text-align:center; color:#ccc; font-size:12px;">
+                    Developed with ❤️ by JCI Dayuan
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -215,7 +305,7 @@
                 defaultText2: ""
             },
 
-            // 2. 台灣總會 (最終鎖定參數)
+            // 2. 台灣總會 (參數分離設定)
             taiwan: {
                 // ★ 英文設定 (Line 1)
                 line1: { 
@@ -239,36 +329,62 @@
         };
 
         let currentMode = 'world'; 
-        
         let fontWorld = null; // Plus Jakarta Sans
         let fontTwEn = null;  // Arial
         let fontTwCh = null;  // Noto Sans TC
-        
         let svgForDownload = "";
 
+        // Modal 視窗控制
+        function openModal() {
+            document.getElementById('devLogModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden'; 
+        }
+        function closeModalBtn() {
+            document.getElementById('devLogModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+        function closeModal(e) {
+            if (e.target.id === 'devLogModal') closeModalBtn();
+        }
+
+        // 載入字體與初始化
         window.onload = function() {
             let loadedCount = 0;
-            const checkLoad = () => {
+            const totalFonts = 3;
+            const statusBox = document.querySelector('#loading-overlay div');
+
+            const updateStatus = (fontName, success) => {
                 loadedCount++;
-                if(loadedCount >= 3) {
-                    document.getElementById('loading-overlay').style.display = 'none';
-                    switchMode('world'); 
+                const icon = success ? '✅' : '❌';
+                statusBox.innerHTML = `
+                    系統載入中...<br>
+                    <span style="font-size:12px;color:#666">
+                        Progress: ${loadedCount} / ${totalFonts}<br>
+                        ${icon} ${fontName} ${success ? 'Ready' : 'Failed'}
+                    </span>
+                `;
+
+                if(loadedCount >= totalFonts) {
+                    setTimeout(() => {
+                        document.getElementById('loading-overlay').style.display = 'none';
+                        switchMode('world');
+                    }, 500);
                 }
             };
 
             opentype.load('PlusJakartaSans-Bold.ttf', function(err, font) {
-                if (err) console.warn("PlusJakartaSans 未載入");
-                fontWorld = font; checkLoad();
+                if (err) updateStatus('PlusJakartaSans', false);
+                else { fontWorld = font; updateStatus('PlusJakartaSans', true); }
             });
 
             opentype.load('arialbd.ttf', function(err, font) {
-                if (err) alert("⚠️ 請確認 arialbd.ttf 是否存在");
-                fontTwEn = font; checkLoad();
+                if (err) updateStatus('Arial', false);
+                else { fontTwEn = font; updateStatus('Arial', true); }
             });
 
             opentype.load('NotoSansTC-Bold.ttf', function(err, font) {
-                if (err) alert("⚠️ 請確認 NotoSansTC-Bold.ttf 是否存在");
-                fontTwCh = font; checkLoad();
+                if (err) updateStatus('NotoSansTC', false);
+                else { fontTwCh = font; updateStatus('NotoSansTC', true); }
             });
         };
 
@@ -289,7 +405,6 @@
                 document.getElementById('label-line1').innerText = "分會名稱 (Line 1)";
                 document.getElementById('label-line2').innerText = "分會名稱 (Line 2)";
             }
-            
             updatePreview();
         }
 
