@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JCI Logo Generator v3.3</title>
+    <title>JCI Logo Generator v3.4</title>
     
     <script>
         window.onerror = function(msg, url, line) {
@@ -129,7 +129,7 @@
     <div id="loading-overlay"><div>系統載入中...<br><span style="font-size:12px;color:#999">Loading Fonts...</span></div></div>
 
     <nav class="navbar">
-        <span class="nav-main">JCI Logo Generator v3.3</span>
+        <span class="nav-main">JCI Logo Generator v3.4</span>
         <span class="nav-sub">Smart Layout Edition</span>
     </nav>
 
@@ -200,7 +200,7 @@
 
     <script>
         // ==========================================
-        // ★★★ CONFIG 設定區域 (v3.3 Revised) ★★★
+        // ★★★ CONFIG 設定區域 (v3.4 Revised) ★★★
         // ==========================================
         const CONFIG = {
             baseWidth: 1000,
@@ -213,14 +213,18 @@
                 defaultText2: ""
             },
 
-            // 2. 台灣總會 (依據照片比例調整)
+            // 2. 台灣總會 (依照疊圖精準調校)
             taiwan: {
                 startXPercent: 11.9,
                 limitXPercent: 74.5, 
 
-                // ★★★ 修正點：依照參考圖，英文大(主)，中文小(輔) ★★★
-                line1: { yPercent: 65.5, sizePx: 88 }, // 英文加大
-                line2: { yPercent: 76.5, sizePx: 68 }, // 中文設為英文的約77%
+                // ★★★ 修正點：依照 Hsinchu 疊圖比例大幅縮小 ★★★
+                // 英文：原本 88 -> 改為 70 (更精緻)
+                line1: { yPercent: 67.5, sizePx: 70 }, 
+                
+                // 中文：原本 68 -> 改為 48 (標準副標題大小)
+                // yPercent 調整至 79.0，拉開垂直間距，避免太擁擠
+                line2: { yPercent: 79.0, sizePx: 48 }, 
                 
                 defaultText1: "Dayuan, Taiwan",
                 defaultText2: "桃園市大園國際青年商會"
