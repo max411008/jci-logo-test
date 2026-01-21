@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JCI Logo Generator V3.0</title>
+    <title>JCI Logo Generator v3.1</title>
     
     <script>
         window.onerror = function(msg, url, line) {
@@ -12,14 +12,12 @@
                 box.style.display = 'block';
                 box.innerHTML += '<div style="color:red; margin-bottom:5px;">❌ 系統錯誤: ' + msg + ' (Line: ' + line + ')</div>';
             }
-            if(document.querySelector('.controls')) document.querySelector('.controls').style.display = 'flex';
         };
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js"></script>
 
     <style>
-        /* --- 1. 字體定義 --- */
         @font-face { 
             font-family: 'Plus Jakarta Sans'; 
             src: url('PlusJakartaSans-Bold.ttf') format('truetype'); 
@@ -34,177 +32,113 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body { 
-            font-family: 'Plus Jakarta Sans', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background-color: #f8f9fa; 
-            margin: 0; padding: 0;
+            font-family: 'Plus Jakarta Sans', 'Noto Sans TC', sans-serif; 
+            background-color: #f8f9fa; margin: 0; padding: 0;
             display: flex; flex-direction: column; align-items: center; 
-            min-height: 100vh;
-            color: #333;
+            min-height: 100vh; color: #333;
         }
 
-        /* --- 2. Navbar --- */
+        /* Navbar */
         .navbar {
-            width: 100%;
-            background-color: #0097D7;
-            color: white;
-            padding: 12px 0;
-            text-align: center;
-            line-height: 1.3;
-            font-weight: bold;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            margin-bottom: 24px;
+            width: 100%; background-color: #0097D7; color: white;
+            padding: 12px 0; text-align: center; font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15); margin-bottom: 20px;
             position: sticky; top: 0; z-index: 100;
         }
         .nav-main { font-size: 20px; display: block; }
-        .nav-sub { font-size: 14px; opacity: 0.9; letter-spacing: 1px; font-weight: normal; }
+        .nav-sub { font-size: 13px; opacity: 0.9; letter-spacing: 1px; font-weight: normal; }
 
-        /* --- 3. Controls --- */
+        /* Controls Container */
         .controls { 
-            background: white; 
-            padding: 24px; 
-            border-radius: 16px; 
+            background: white; padding: 20px; border-radius: 16px; 
             box-shadow: 0 8px 20px rgba(0,0,0,0.06); 
-            display: flex; flex-direction: column; gap: 16px; /* 改為 column 排列以適應模式切換 */
-            margin-bottom: 24px; 
-            max-width: 800px; width: 90%;
+            display: flex; flex-direction: column; gap: 15px;
+            margin-bottom: 20px; max-width: 600px; width: 90%;
         }
 
         /* 模式切換按鈕 */
         .mode-switch-container {
-            display: flex;
-            background: #f1f3f5;
-            padding: 4px;
-            border-radius: 8px;
-            margin-bottom: 10px;
+            display: flex; background: #f1f3f5; padding: 4px; border-radius: 8px;
         }
         .mode-btn {
-            flex: 1;
-            padding: 10px;
-            text-align: center;
-            cursor: pointer;
-            font-weight: bold;
-            border-radius: 6px;
-            color: #666;
-            transition: all 0.3s ease;
-            font-size: 14px;
+            flex: 1; padding: 10px; text-align: center; cursor: pointer;
+            font-weight: bold; border-radius: 6px; color: #666; transition: all 0.3s ease; font-size: 14px;
         }
-        .mode-btn.active {
-            background-color: #0097D7;
-            color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
+        .mode-btn.active { background-color: #0097D7; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
-        /* 輸入區塊容器 */
-        .inputs-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
-            align-items: flex-end;
-            justify-content: center;
+        /* 輸入區改為垂直堆疊 (解決輸入框太小問題) */
+        .input-stack {
+            display: flex; flex-direction: column; gap: 12px; width: 100%;
         }
         
-        .input-group { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 250px; flex: 1; }
-        label { font-size: 13px; font-weight: 700; color: #555; margin-left: 2px; }
+        .input-group { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+        
+        label { font-size: 13px; font-weight: 700; color: #555; margin-left: 2px; display: flex; justify-content: space-between; }
+        
         input, select { 
-            padding: 10px 14px; 
-            font-size: 15px; 
-            border: 1px solid #e0e0e0; 
-            border-radius: 8px; 
-            width: 100%; 
-            background-color: #fdfdfd;
+            padding: 12px; font-size: 16px; /* 加大字體方便輸入 */
+            border: 1px solid #e0e0e0; border-radius: 8px; width: 100%; background-color: #fdfdfd;
             transition: border-color 0.2s;
         }
         input:focus, select:focus { border-color: #0097D7; outline: none; }
         
         .warning-msg {
-            display: none; 
-            color: #dc3545; font-size: 13px; line-height: 1.4;
-            margin-top: 6px; background-color: #ffe6e6; 
-            padding: 10px; border-radius: 6px; border: 1px solid #ffcccc;
+            display: none; color: #dc3545; font-size: 12px; margin-top: 4px;
+            background-color: #fff5f5; padding: 8px; border-radius: 4px; border: 1px solid #ffcccc;
         }
         
-        .btn-group-vertical { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 250px; flex: 1; }
-        
+        /* 按鈕組 */
+        .btn-group-vertical { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 10px; }
         .btn-base {
             padding: 0 20px; font-size: 15px; font-weight: bold; color: white;
-            border: none; border-radius: 8px; cursor: pointer; height: 44px; width: 100%;
-            display: flex; align-items: center; justify-content: center;
-            transition: filter 0.2s;
+            border: none; border-radius: 8px; cursor: pointer; height: 48px; width: 100%;
+            display: flex; align-items: center; justify-content: center; transition: filter 0.2s;
         }
         .btn-base:hover { filter: brightness(1.1); }
         .btn-base:disabled { background-color: #ccc !important; cursor: wait; }
-
         .btn-png { background-color: #0097D7; }
         .btn-svg { background-color: #20c997; } 
-        .btn-hint { font-size: 12px; color: #666; text-align: center; margin-top: -5px; }
+        .btn-hint { font-size: 12px; color: #888; text-align: center; margin-top: -5px; }
 
-        /* --- 4. Preview --- */
+        /* Preview Area */
+        .preview-wrapper {
+            width: 100%; max-width: 600px; margin: 0 auto;
+            text-align: center;
+        }
+        .preview-label {
+            font-size: 12px; color: #888; margin-bottom: 5px; font-weight: bold; letter-spacing: 1px;
+            text-transform: uppercase;
+        }
         .preview-container { 
-            position: relative; width: 500px; max-width: 90vw; aspect-ratio: 1 / 1; 
-            padding: 0; border: none; box-shadow: none; background-color: transparent; 
-            margin: 0 auto; display: flex; align-items: center; justify-content: center;
-            transition: background-color 0.3s;
-        }
-        
-        #svg-preview-box {
-            width: 100%; height: 100%;
+            position: relative; width: 100%; aspect-ratio: 1000 / 665;
+            border: 1px solid #eee; background-color: #fff; box-sizing: border-box; 
+            border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);
             display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
         }
+        #svg-preview-box { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        #svg-preview-box svg { width: 100%; height: 100%; display: block; }
 
-        #svg-preview-box svg { 
-            max-width: 100%; max-height: 100%; width: auto; height: auto; display: block; 
-            filter: drop-shadow(0px 5px 10px rgba(0,0,0,0.1));
-        }
-
-        /* --- 5. Overlay & Debug --- */
-        .mobile-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 2000;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            padding: 20px;
-        }
-        .mobile-overlay img { max-width: 100%; border: 2px solid white; margin-bottom: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        .mobile-overlay p { color: white; font-weight: bold; text-align: center; line-height: 1.6; font-size: 16px; margin-bottom: 15px; }
-        .close-overlay { padding: 12px 40px; background: #0097D7; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; font-size: 15px; }
+        /* Footer */
+        .footer { margin-top: auto; padding: 40px 20px; width: 100%; text-align: center; color: #666; font-size: 13px; line-height: 1.6; border-top: 1px solid #eee; background: white; }
+        .footer-link-blue { color: #0097D7; text-decoration: none; font-weight: bold; }
         
-        #debug-console { 
-            display: none; width: 90%; max-width: 800px; background: #333; color: #fff; 
-            padding: 15px; margin-bottom: 20px; border-radius: 8px; font-family: monospace; font-size: 12px; 
-            white-space: pre-wrap; border: 2px solid #ff4444;
-        }
-
         #loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.95); z-index: 999;
+            background: rgba(255,255,255,0.98); z-index: 999;
             display: flex; justify-content: center; align-items: center;
             flex-direction: column; font-weight: bold; color: #0097D7;
-        }
-
-        /* --- 6. Footer --- */
-        .footer { 
-            margin-top: auto; padding: 40px 20px; width: 100%; text-align: center; 
-            color: #666; font-size: 14px; line-height: 1.8; 
-            background-color: #fff; border-top: 1px solid #eee;
-        }
-        .footer-block { margin-bottom: 15px; } 
-        .footer-link-blue { color: #0097D7; text-decoration: none; font-weight: bold; transition: opacity 0.2s; }
-        .footer-link-blue:hover { opacity: 0.8; text-decoration: underline; }
-        .copyright-warning { 
-            margin-top: 20px; padding-top: 15px; border-top: 1px dashed #eee; 
-            font-size: 12px; color: #aaa; font-style: italic; line-height: 1.5;
         }
     </style>
 </head>
 <body>
 
-    <div id="loading-overlay"><div>正在讀取字型資源...<br><span style="font-size:12px;color:#666">Loading Fonts...</span></div></div>
+    <div id="loading-overlay"><div>系統載入中...<br><span style="font-size:12px;color:#999">Loading Fonts...</span></div></div>
 
     <nav class="navbar">
-        <span class="nav-main">JCI Logo Generator V3.0</span>
-        <span class="nav-sub">Dual-Mode Edition</span>
+        <span class="nav-main">JCI Logo Generator v3.1</span>
+        <span class="nav-sub">Smart Layout Edition</span>
     </nav>
-
-    <div id="debug-console">系統初始化中...</div>
 
     <div class="controls">
         <div class="mode-switch-container">
@@ -212,149 +146,128 @@
             <div id="mode-taiwan" class="mode-btn" onclick="switchMode('taiwan')">🇹🇼 台灣總會版 (Taiwan)</div>
         </div>
 
-        <div class="inputs-container">
+        <div class="input-stack">
             <div class="input-group">
-                <label id="label-line1">分會名稱 / Chapter Name (Line 1)</label>
+                <label id="label-line1">分會名稱 (Line 1)</label>
                 <input type="text" id="chapterInput1" value="Dayuan" oninput="updatePreview()">
-                <div id="lengthWarning" class="warning-msg">
-                    ⚠️ 文字過長 (超出盾牌右緣)<br>
-                    <span style="font-size:12px; color:#c82333;">⚠️ Text too long</span>
-                </div>
-            </div>
-            <div class="input-group">
-                <label id="label-line2">分會名稱 / Chapter Name (Line 2)</label>
-                <input type="text" id="chapterInput2" value="" placeholder="(選填)" oninput="updatePreview()">
-            </div>
-            <div class="input-group">
-                <label>Logo 樣式 / Style</label>
-                <select id="logoSelect" onchange="updatePreview()">
-                    <option value="New JCI Logo (SVG)_Primary.svg|none|jci-blue|transparent">Primary (白底藍字)</option>
-                    <option value="New JCI Logo (SVG)_Secondary - White on JCI Blue.svg|none|white|transparent">Blue Background (藍底白字)</option>
-                    <option value="New JCI Logo (SVG).svg|#1c1f2a|white|jci-black">Dark Background (去背全白)</option>
-                    <option value="New JCI Logo (SVG)_Secondary - Inverted Color on JCI Black.svg|#1c1f2a|white|transparent">Inverted (黑底白字)</option>
-                    <option value="New JCI Logo (SVG)_Secondary - JCI Black.svg|none|pure-black|transparent">Black Text (全黑)</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label>檔案大小 / File Size</label>
-                <select id="sizeSelect">
-                    <option value="1">小 / Small (1000px)</option>
-                    <option value="3" selected>中 / Medium (3000px)</option>
-                    <option value="5">大 / Large (5000px)</option>
-                </select>
+                <div id="lengthWarning" class="warning-msg">⚠️ 文字過長 (超出盾牌範圍)</div>
             </div>
             
-            <div class="btn-group-vertical">
-                <button class="btn-base btn-png" onclick="downloadFile('png')">下載 PNG 圖片 / Download PNG</button>
-                <div class="btn-hint">(Transparent Background)</div>
-                <button class="btn-base btn-svg" onclick="downloadFile('svg')">下載 SVG 向量 / Download SVG</button>
-                <div class="btn-hint">(Outlined Text / Vector)</div>
+            <div class="input-group">
+                <label id="label-line2">分會名稱 (Line 2, 選填)</label>
+                <input type="text" id="chapterInput2" value="" placeholder="(選填)" oninput="updatePreview()">
             </div>
+
+            <div style="display:flex; gap:10px;">
+                <div class="input-group" style="flex:1">
+                    <label>樣式 / Style</label>
+                    <select id="logoSelect" onchange="updatePreview()">
+                        <option value="New JCI Logo (SVG)_Primary.svg|none|jci-blue|transparent">Primary (白底藍字)</option>
+                        <option value="New JCI Logo (SVG)_Secondary - White on JCI Blue.svg|none|white|transparent">Blue Background (藍底白字)</option>
+                        <option value="New JCI Logo (SVG).svg|#1c1f2a|white|jci-black">Dark Background (去背全白)</option>
+                        <option value="New JCI Logo (SVG)_Secondary - Inverted Color on JCI Black.svg|#1c1f2a|white|transparent">Inverted (黑底白字)</option>
+                        <option value="New JCI Logo (SVG)_Secondary - JCI Black.svg|none|pure-black|transparent">Black Text (全黑)</option>
+                    </select>
+                </div>
+                <div class="input-group" style="flex:1">
+                    <label>大小 / Size</label>
+                    <select id="sizeSelect">
+                        <option value="1">1x (1000px)</option>
+                        <option value="3" selected>3x (3000px)</option>
+                        <option value="5">5x (5000px)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="btn-group-vertical">
+            <button class="btn-base btn-png" onclick="downloadFile('png')">下載 PNG 圖片</button>
+            <div class="btn-hint">(Transparent Background)</div>
+            <button class="btn-base btn-svg" onclick="downloadFile('svg')">下載 SVG 向量</button>
+            <div class="btn-hint">(Vector / Outlined Text)</div>
         </div>
     </div>
 
-    <div class="preview-container" id="previewContainer">
-        <div id="svg-preview-box">正在載入字型資源...</div>
+    <div class="preview-wrapper">
+        <div class="preview-label">▼ 預覽區 (Preview Area) ▼</div>
+        <div class="preview-container" id="previewContainer">
+            <div id="svg-preview-box"></div>
+        </div>
+        <div class="preview-label" style="margin-top:5px; font-size:11px; font-weight:normal;">(中文/英文 預覽區)</div>
     </div>
 
     <div class="footer">
         <div class="footer-block">
-            Designed & Developed by 
-            <a href="https://www.facebook.com/zhenhui.lin/" target="_blank" class="footer-link-blue">Chenghui Lin</a><br>
+            Designed & Developed by <a href="#" class="footer-link-blue">Chenghui Lin</a><br>
             (2023 President, JCI Dayuan)
         </div>
         <div class="footer-block">
-            <a href="https://www.jcidayuan.site/" target="_blank" class="footer-link-blue">桃園市大園國際青年商會</a> 
-            <a href="https://www.facebook.com/zhenhui.lin/" target="_blank" class="footer-link-blue">2023年會長 林振暉</a> 製作<br>
-            Copyright &copy; 2026 Chenghui Lin. All rights reserved.
-        </div>
-        <div class="copyright-warning">
-            本程式由 2023 大園青商 林振暉 會長為服務 JCI 夥伴免費開發。<br>
-            歡迎廣泛使用，惟請尊重原創開發者成果，請勿私自盜用、修改或宣稱為個人作品。
+            <a href="#" class="footer-link-blue">桃園市大園國際青年商會</a> 製作
         </div>
     </div>
 
     <script>
-        // --- V3.0 配置 (支援雙模式) ---
+        // ==========================================
+        // ★★★ CONFIG 設定區域 (v3.1) ★★★
+        // ==========================================
         const CONFIG = {
             baseWidth: 1000,
             
-            // 模式 1: 世界總會 (V2.0 邏輯)
+            // 1. 世界總會 (維持原樣)
             world: {
-                // 原本的參數
                 line1: { xPercent: 11.8, yPercent: 64.8, sizePx: 81, spacing: -0.3 },
                 line2: { xPercent: 11.8, yPercent: 73.6, sizePx: 81, spacing: -0.3 },
                 defaultText1: "Dayuan",
                 defaultText2: ""
             },
 
-            // 模式 2: 台灣總會 (左對齊，中文)
+            // 2. 台灣總會 (紅線演算法)
             taiwan: {
-                // 這裡使用您提供的左對齊參數微調 (Line 2 字體通常稍小於 Line 1)
-                line1: { xPercent: 11.9, yPercent: 66.0, sizePx: 70, spacing: 0 },
-                line2: { xPercent: 11.9, yPercent: 76.0, sizePx: 58, spacing: 0 },
-                defaultText1: "Culture City, Taiwan",
-                defaultText2: "臺中市文化城國際青年商會"
+                // 起始點 (J的左側)
+                startXPercent: 11.9,
+                
+                // ★★★ 關鍵設定：紅線終點 (盾牌尖端) ★★★
+                // 根據圖片分析，盾牌尖端大約在 69.5% 的位置
+                limitXPercent: 69.5, 
+
+                // 初始標準大小 (字少時以此為準)
+                line1: { yPercent: 66.0, sizePx: 70 }, // 英文
+                line2: { yPercent: 76.0, sizePx: 58 }, // 中文
+                
+                defaultText1: "Dayuan, Taiwan",
+                defaultText2: "桃園市大園國際青年商會"
             }
         };
 
-        let currentMode = 'world'; // 預設模式
-        let fontEn = null; // Plus Jakarta Sans
-        let fontTw = null; // Noto Sans TC
+        let currentMode = 'world'; 
+        let fontEn = null; 
+        let fontTw = null; 
         let svgForDownload = "";
 
-        function log(msg) {
-            const box = document.getElementById('debug-console');
-            if(box) {
-                box.style.display = 'block';
-                box.innerHTML += '<div>> ' + msg + '</div>';
-            }
-            console.log(msg);
-        }
-
-        // 初始化載入
         window.onload = function() {
-            if (window.location.protocol === 'file:') {
-                alert("Please use Local Server or GitHub Pages.\n直接開啟檔案會導致圖片無法讀取！");
-            }
-
             let loadedCount = 0;
             const checkLoad = () => {
                 loadedCount++;
                 if(loadedCount >= 2) {
                     document.getElementById('loading-overlay').style.display = 'none';
-                    switchMode('world'); // 初始化為世界模式
+                    switchMode('world'); 
                 }
             };
 
-            // 載入英文體
             opentype.load('PlusJakartaSans-Bold.ttf', function(err, font) {
-                if (err) log("❌ 英文體載入失敗 (PlusJakartaSans)");
-                else { fontEn = font; checkLoad(); }
+                if (err) alert("❌ 英文體載入失敗"); else { fontEn = font; checkLoad(); }
             });
 
-            // 載入中文體
             opentype.load('NotoSansTC-Bold.ttf', function(err, font) {
-                if (err) {
-                    log("⚠️ 中文體載入失敗 (NotoSansTC)，將使用英文體暫代");
-                    fontTw = fontEn; // Fallback
-                    checkLoad(); // 即使失敗也算完成，避免卡死
-                } else { 
-                    fontTw = font; 
-                    checkLoad(); 
-                }
+                if (err) { fontTw = fontEn; checkLoad(); } else { fontTw = font; checkLoad(); }
             });
         };
 
-        // 模式切換邏輯
         function switchMode(mode) {
             currentMode = mode;
-            
-            // 更新按鈕樣式
             document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('mode-' + mode).classList.add('active');
 
-            // 更新預設文字與標籤
             const settings = CONFIG[mode];
             document.getElementById('chapterInput1').value = settings.defaultText1;
             document.getElementById('chapterInput2').value = settings.defaultText2;
@@ -362,25 +275,22 @@
             if(mode === 'taiwan') {
                 document.getElementById('label-line1').innerText = "分會英文名稱 (English)";
                 document.getElementById('label-line2').innerText = "分會中文名稱 (Chinese)";
+                // 台灣模式隱藏「字太長」警告，因為我們會自動縮放
+                document.getElementById('lengthWarning').style.display = 'none';
             } else {
-                document.getElementById('label-line1').innerText = "分會名稱 / Chapter Name (Line 1)";
-                document.getElementById('label-line2').innerText = "分會名稱 / Chapter Name (Line 2)";
+                document.getElementById('label-line1').innerText = "分會名稱 (Line 1)";
+                document.getElementById('label-line2').innerText = "分會名稱 (Line 2)";
             }
-
             updatePreview();
         }
 
-        // --- 核心渲染邏輯 ---
         async function updatePreview() {
             if (!fontEn) return;
             
             const parts = document.getElementById('logoSelect').value.split('|');
             const fileName = parts[0], bgToRemove = parts[1], colorType = parts[2], uiBgMode = parts[3];
 
-            // 預覽區背景
-            const pc = document.getElementById('previewContainer');
-            pc.style.backgroundColor = (uiBgMode === 'jci-black') ? '#1C1F2A' : 'transparent';
-
+            document.getElementById('previewContainer').style.backgroundColor = (uiBgMode === 'jci-black') ? '#1C1F2A' : 'transparent';
             const colors = { 'jci-blue': '#0097D7', 'white': '#FFFFFF', 'black': '#1C1F2A', 'pure-black': '#000000' };
             const textColor = colors[colorType] || '#0097D7';
 
@@ -393,7 +303,7 @@
                 const doc = parser.parseFromString(rawSvg, "image/svg+xml");
                 const svgEl = doc.documentElement;
 
-                // 預覽去背邏輯
+                // 預覽去背
                 svgEl.querySelectorAll('path, rect, polygon, circle').forEach(el => {
                     const fill = el.getAttribute('fill');
                     if (fill && fill.toLowerCase() === bgToRemove.toLowerCase()) {
@@ -414,64 +324,119 @@
                 const t2 = document.getElementById('chapterInput2').value;
                 const settings = CONFIG[currentMode];
 
-                // --- 高階文字渲染 (支援雙字體) ---
-                const createAdvancedPath = (text, config, fontToUse) => {
-                    if (!text || !fontToUse) return "";
-                    
-                    const startX = width * (config.xPercent / 100);
-                    const fontSize = config.sizePx * scaleFactor;
-                    // opentype 的 Y 是基線，需要從頂部座標換算
-                    // 這裡為了保持 V2 邏輯一致性，我們直接用 v2 的百分比邏輯
-                    // 但對於 Taiwan Mode，我們微調 Y 軸計算方式
-                    
-                    // 注意：opentype 畫字是從 baseline 開始
-                    // 原本 V2 的 yPercent 是經過調整的。
-                    // 這裡統一邏輯：
-                    const baselineY = (height * (config.yPercent / 100)) + fontSize;
-                    const extraSpacing = (config.spacing || 0) * scaleFactor;
-
-                    const combinedPath = new opentype.Path();
-                    let cursorX = startX;
-                    const glyphs = fontToUse.stringToGlyphs(text);
-
-                    for (let i = 0; i < glyphs.length; i++) {
-                        const glyph = glyphs[i];
-                        combinedPath.extend(glyph.getPath(cursorX, baselineY, fontSize));
-                        cursorX += (glyph.advanceWidth * (fontSize / fontToUse.unitsPerEm));
-                        if (i < glyphs.length - 1) {
-                            cursorX += fontToUse.getKerningValue(glyph, glyphs[i + 1]) * (fontSize / fontToUse.unitsPerEm);
-                        }
-                        cursorX += extraSpacing;
-                    }
-                    combinedPath.fill = textColor;
-                    return combinedPath.toSVG(2);
-                };
-
-                // --- 字體選擇 ---
-                // World 模式: 兩行都用英文體
-                // Taiwan 模式: 第一行英文體，第二行中文體
-                const fontLine1 = fontEn;
-                const fontLine2 = (currentMode === 'taiwan' && fontTw) ? fontTw : fontEn;
-
+                // 準備產生文字的容器
                 const g = doc.createElementNS("http://www.w3.org/2000/svg", "g");
-                g.innerHTML = createAdvancedPath(t1, settings.line1, fontLine1) + 
-                              createAdvancedPath(t2, settings.line2, fontLine2);
-                svgEl.appendChild(g);
 
-                // 序列化
+                // --- 演算法分歧 ---
+                if (currentMode === 'world') {
+                    // === 世界模式：固定大小，靠左/中 (原邏輯) ===
+                    const font1 = fontEn;
+                    const p1 = createStandardPath(t1, settings.line1, font1, width, height, scaleFactor, textColor);
+                    const p2 = createStandardPath(t2, settings.line2, font1, width, height, scaleFactor, textColor);
+                    g.innerHTML = p1 + p2;
+
+                    // 警告偵測
+                    const w1 = font1.getAdvanceWidth(t1, settings.line1.sizePx * scaleFactor);
+                    document.getElementById('lengthWarning').style.display = (w1 > width * 0.55) ? 'block' : 'none';
+
+                } else {
+                    // === 台灣模式：紅線對齊演算法 ===
+                    document.getElementById('lengthWarning').style.display = 'none';
+                    
+                    const font1 = fontEn; // 英文
+                    const font2 = fontTw; // 中文
+
+                    // 計算目標寬度 (紅線 - 起點)
+                    const startX = width * (settings.startXPercent / 100);
+                    const limitX = width * (settings.limitXPercent / 100);
+                    const targetWidth = limitX - startX;
+
+                    // 生成 Line 1 (英文) - 智慧縮放
+                    const p1 = createSmartFitPath(t1, settings.line1, font1, startX, height, scaleFactor, targetWidth, textColor);
+                    
+                    // 生成 Line 2 (中文) - 智慧縮放
+                    const p2 = createSmartFitPath(t2, settings.line2, font2, startX, height, scaleFactor, targetWidth, textColor);
+
+                    g.innerHTML = p1 + p2;
+                }
+
+                svgEl.appendChild(g);
                 svgForDownload = new XMLSerializer().serializeToString(svgEl);
                 document.getElementById('svg-preview-box').innerHTML = svgForDownload;
 
-                // 警告偵測 (使用第一行字體測量)
-                const w1 = fontLine1.getAdvanceWidth(t1, settings.line1.sizePx * scaleFactor);
-                document.getElementById('lengthWarning').style.display = (w1 > width * 0.55) ? 'block' : 'none';
-
             } catch (err) {
-                log("❌ 渲染失敗: " + err.message);
+                console.error(err);
             }
         }
 
-        // --- 下載邏輯 (保持 V2.0 不變) ---
+        // --- Helper: 世界模式標準渲染 ---
+        function createStandardPath(text, config, font, width, height, scale, color) {
+            if (!text) return "";
+            const startX = width * (config.xPercent / 100);
+            const fontSize = config.sizePx * scale;
+            const baselineY = (height * (config.yPercent / 100)) + fontSize;
+            const extraSpacing = (config.spacing || 0) * scale;
+
+            return generatePathString(text, font, startX, baselineY, fontSize, extraSpacing, color);
+        }
+
+        // --- Helper: 台灣模式智慧渲染 (紅線演算法) ---
+        function createSmartFitPath(text, config, font, startX, height, scale, targetWidth, color) {
+            if (!text) return "";
+
+            // 1. 先用標準大小測量寬度
+            const stdFontSize = config.sizePx * scale;
+            const rawWidth = font.getAdvanceWidth(text, stdFontSize);
+
+            let finalFontSize = stdFontSize;
+            let finalSpacing = 0;
+
+            if (rawWidth < targetWidth) {
+                // 情境 A: 字少 -> 固定字體，拉大間距 (Justify)
+                // 計算需要補多少空白
+                const gap = targetWidth - rawWidth;
+                const charCount = text.length;
+                if (charCount > 1) {
+                    finalSpacing = gap / (charCount - 1);
+                }
+            } else {
+                // 情境 B: 字多 -> 間距為 0，縮小字體 (Scale Down)
+                // 計算縮放比例
+                const ratio = targetWidth / rawWidth;
+                finalFontSize = stdFontSize * ratio;
+            }
+
+            const baselineY = (height * (config.yPercent / 100)) + stdFontSize; // Y軸位置維持標準參考點，避免字變小後往上跑
+            
+            return generatePathString(text, font, startX, baselineY, finalFontSize, finalSpacing, color);
+        }
+
+        // --- 通用路徑生成 (含 Kerning) ---
+        function generatePathString(text, font, x, y, fontSize, spacing, color) {
+            const combinedPath = new opentype.Path();
+            let cursorX = x;
+            const glyphs = font.stringToGlyphs(text);
+
+            for (let i = 0; i < glyphs.length; i++) {
+                const glyph = glyphs[i];
+                combinedPath.extend(glyph.getPath(cursorX, y, fontSize));
+                
+                // 移動游標
+                cursorX += (glyph.advanceWidth * (fontSize / font.unitsPerEm));
+                
+                // 加入 Kerning (字距微調)
+                if (i < glyphs.length - 1) {
+                    cursorX += font.getKerningValue(glyph, glyphs[i + 1]) * (fontSize / font.unitsPerEm);
+                }
+                
+                // 加入額外間距 (Spacing)
+                cursorX += spacing;
+            }
+            combinedPath.fill = color;
+            return combinedPath.toSVG(2);
+        }
+
+        // --- 下載邏輯 ---
         async function downloadFile(type) {
             if (!svgForDownload) return;
             const name = "JCI_" + (document.getElementById('chapterInput1').value || "Logo").replace(/[^a-zA-Z0-9]/g, "_");
@@ -518,17 +483,16 @@
                     URL.revokeObjectURL(url);
                     const pngData = canvas.toDataURL("image/png");
 
+                    // 手機下載處理
                     if (/Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-                        const overlay = document.createElement('div');
-                        overlay.className = 'mobile-overlay';
-                        overlay.innerHTML = `<p>圖片已生成！<br>請長按下方圖片並選擇「儲存圖片」</p><img src="${pngData}"><button class="close-overlay" onclick="this.parentElement.remove()">完成並返回</button>`;
-                        document.body.appendChild(overlay);
+                        const win = window.open();
+                        win.document.write('<img src="' + pngData + '" style="width:100%"/>');
                     } else { 
                         triggerDL(pngData, name + ".png"); 
                     }
                 }
             } catch (e) { 
-                log("❌ 下載錯誤: " + e.message); 
+                console.error(e);
             } finally { 
                 btn.innerText = oldText; btn.disabled = false; 
             }
