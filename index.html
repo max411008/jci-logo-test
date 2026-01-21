@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JCI Logo Generator v3.2</title>
+    <title>JCI Logo Generator v3.3</title>
     
     <script>
         window.onerror = function(msg, url, line) {
@@ -129,7 +129,7 @@
     <div id="loading-overlay"><div>系統載入中...<br><span style="font-size:12px;color:#999">Loading Fonts...</span></div></div>
 
     <nav class="navbar">
-        <span class="nav-main">JCI Logo Generator v3.2</span>
+        <span class="nav-main">JCI Logo Generator v3.3</span>
         <span class="nav-sub">Smart Layout Edition</span>
     </nav>
 
@@ -165,9 +165,9 @@
                 <div class="input-group" style="flex:1">
                     <label>大小 / Size</label>
                     <select id="sizeSelect">
-                        <option value="1">1x (1000px)</option>
-                        <option value="3" selected>3x (3000px)</option>
-                        <option value="5">5x (5000px)</option>
+                        <option value="1">小 (1x)</option>
+                        <option value="3" selected>中 (3x)</option>
+                        <option value="5">大 (5x)</option>
                     </select>
                 </div>
             </div>
@@ -186,7 +186,6 @@
         <div class="preview-container" id="previewContainer">
             <div id="svg-preview-box"></div>
         </div>
-        <div class="preview-label" style="margin-top:5px; font-size:11px; font-weight:normal;">(中文/英文 預覽區)</div>
     </div>
 
     <div class="footer">
@@ -201,7 +200,7 @@
 
     <script>
         // ==========================================
-        // ★★★ CONFIG 設定區域 (v3.2) ★★★
+        // ★★★ CONFIG 設定區域 (v3.3 Revised) ★★★
         // ==========================================
         const CONFIG = {
             baseWidth: 1000,
@@ -214,17 +213,14 @@
                 defaultText2: ""
             },
 
-            // 2. 台灣總會 (紅線演算法)
+            // 2. 台灣總會 (依據照片比例調整)
             taiwan: {
                 startXPercent: 11.9,
-                
-                // ★★★ 修改處：紅線終點 (盾牌尖端) ★★★
-                // 調整到 74.5% 以對齊盾牌尖端
                 limitXPercent: 74.5, 
 
-                // ★★★ 修改處：字體大小改為 81 (同世界總會) ★★★
-                line1: { yPercent: 66.0, sizePx: 81 }, // 英文原本 70 -> 改 81
-                line2: { yPercent: 76.0, sizePx: 81 }, // 中文原本 58 -> 改 81
+                // ★★★ 修正點：依照參考圖，英文大(主)，中文小(輔) ★★★
+                line1: { yPercent: 65.5, sizePx: 88 }, // 英文加大
+                line2: { yPercent: 76.5, sizePx: 68 }, // 中文設為英文的約77%
                 
                 defaultText1: "Dayuan, Taiwan",
                 defaultText2: "桃園市大園國際青年商會"
