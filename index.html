@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JCI Logo Generator v4.2</title>
+    <title>JCI Logo Generator v3.0</title>
     
     <script>
         window.onerror = function(msg, url, line) {
@@ -131,7 +131,7 @@
     <div id="loading-overlay"><div>系統載入中...<br><span style="font-size:12px;color:#999">Loading Fonts... (3 files)</span></div></div>
 
     <nav class="navbar">
-        <span class="nav-main">JCI Logo Generator v4.2</span>
+        <span class="nav-main">JCI Logo Generator v3.0</span>
         <span class="nav-sub">Official & Safe Font Edition</span>
     </nav>
 
@@ -202,12 +202,12 @@
 
     <script>
         // ==========================================
-        // ★★★ CONFIG (v4.2 獨立設定版) ★★★
+        // ★★★ CONFIG (v3.0 最終定案版) ★★★
         // ==========================================
         const CONFIG = {
             baseWidth: 1000,
             
-            // 1. 世界總會 (保持原樣)
+            // 1. 世界總會
             world: {
                 line1: { xPercent: 11.8, yPercent: 64.8, sizePx: 81, spacing: -0.3 },
                 line2: { xPercent: 11.8, yPercent: 73.6, sizePx: 81, spacing: -0.3 },
@@ -215,7 +215,7 @@
                 defaultText2: ""
             },
 
-            // 2. 台灣總會 (參數分離設定)
+            // 2. 台灣總會 (最終鎖定參數)
             taiwan: {
                 // ★ 英文設定 (Line 1)
                 line1: { 
@@ -227,7 +227,7 @@
                 
                 // ★ 中文設定 (Line 2)
                 line2: { 
-                    startX: 12.2,   // 中文起始位置 (可獨立修改，例如改成 12.0)
+                    startX: 12.2,   // 中文起始位置
                     limitX: 75.2,   // 中文邊界位置
                     yPercent: 75.0, 
                     sizePx: 56 
@@ -350,17 +350,14 @@
                 } else {
                     document.getElementById('lengthWarning').style.display = 'none';
                     
-                    // ★ 獨立計算英文的寬度範圍
                     const l1Start = width * (settings.line1.startX / 100);
                     const l1Limit = width * (settings.line1.limitX / 100);
                     const l1Target = l1Limit - l1Start;
                     
-                    // ★ 獨立計算中文的寬度範圍
                     const l2Start = width * (settings.line2.startX / 100);
                     const l2Limit = width * (settings.line2.limitX / 100);
                     const l2Target = l2Limit - l2Start;
 
-                    // 繪製路徑 (分別傳入各自的 Start, TargetWidth)
                     const p1 = createSmartFitPath(t1, settings.line1, fTwEn, l1Start, height, scaleFactor, l1Target, textColor);
                     const p2 = createSmartFitPath(t2, settings.line2, fTwCh, l2Start, height, scaleFactor, l2Target, textColor);
 
@@ -393,15 +390,12 @@
             let finalSpacing = 0;
 
             if (rawWidth < targetWidth) {
-                // ★ 恢復分散對齊功能 (Dispersion)
-                // 當文字長度小於目標寬度時，自動計算字距填滿
                 const gap = targetWidth - rawWidth;
                 const charCount = text.length;
                 if (charCount > 1) {
                     finalSpacing = gap / (charCount - 1);
                 }
             } else {
-                // 超出寬度則縮小
                 const ratio = targetWidth / rawWidth;
                 finalFontSize = stdFontSize * ratio;
             }
