@@ -7,6 +7,7 @@
     
     <script>
         window.onerror = function(msg, url, line) {
+            // 忽略 ResizeObserver 的良性錯誤
             if (msg.indexOf('ResizeObserver') !== -1) return;
             console.log('系統訊息: ' + msg);
         };
@@ -15,7 +16,9 @@
     <script src="https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js"></script>
 
     <style>
-        /* 字體定義 */
+        /* =========================================
+           1. 字體定義 (必須確保檔案存在於同目錄)
+           ========================================= */
         @font-face { 
             font-family: 'Plus Jakarta Sans'; 
             src: url('PlusJakartaSans-Bold.ttf') format('truetype'); 
@@ -32,138 +35,354 @@
             font-weight: bold; 
         }
         
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        /* =========================================
+           2. 全域基礎樣式
+           ========================================= */
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
+        }
         
         body { 
             font-family: 'Plus Jakarta Sans', 'Arial', 'Noto Sans TC', sans-serif; 
-            background-color: #f8f9fa; margin: 0; padding: 0;
-            display: flex; flex-direction: column; align-items: center; 
-            min-height: 100vh; color: #333;
+            background-color: #f8f9fa; 
+            margin: 0; 
+            padding: 0;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh; 
+            color: #333;
         }
 
-        /* 導覽列 */
+        /* =========================================
+           3. 導覽列與載入畫面
+           ========================================= */
         .navbar {
-            width: 100%; background-color: #0097D7; color: white;
-            padding: 12px 0; text-align: center; font-weight: bold;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15); margin-bottom: 20px;
-            position: sticky; top: 0; z-index: 100;
+            width: 100%; 
+            background-color: #0097D7; 
+            color: white;
+            padding: 12px 0; 
+            text-align: center; 
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15); 
+            margin-bottom: 20px;
+            position: sticky; 
+            top: 0; 
+            z-index: 100;
         }
-        .nav-main { font-size: 20px; display: block; }
-        .nav-sub { font-size: 13px; opacity: 0.9; letter-spacing: 1px; font-weight: normal; }
+        .nav-main { 
+            font-size: 20px; 
+            display: block; 
+        }
+        .nav-sub { 
+            font-size: 13px; 
+            opacity: 0.9; 
+            letter-spacing: 1px; 
+            font-weight: normal; 
+        }
 
-        /* 控制面板 */
+        #loading-overlay {
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            background: rgba(255,255,255,0.98); 
+            z-index: 999;
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            flex-direction: column; 
+            font-weight: bold; 
+            color: #0097D7;
+        }
+
+        /* =========================================
+           4. 控制面板區塊 (Controls)
+           ========================================= */
         .controls { 
-            background: white; padding: 20px; border-radius: 16px; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 16px; 
             box-shadow: 0 8px 20px rgba(0,0,0,0.06); 
-            display: flex; flex-direction: column; gap: 15px;
-            margin-bottom: 20px; max-width: 600px; width: 90%;
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px;
+            margin-bottom: 20px; 
+            max-width: 600px; 
+            width: 90%;
         }
 
         .mode-switch-container {
-            display: flex; background: #f1f3f5; padding: 4px; border-radius: 8px;
+            display: flex; 
+            background: #f1f3f5; 
+            padding: 4px; 
+            border-radius: 8px;
         }
         .mode-btn {
-            flex: 1; padding: 10px; text-align: center; cursor: pointer;
-            font-weight: bold; border-radius: 6px; color: #666; transition: all 0.3s ease; font-size: 14px;
+            flex: 1; 
+            padding: 10px; 
+            text-align: center; 
+            cursor: pointer;
+            font-weight: bold; 
+            border-radius: 6px; 
+            color: #666; 
+            transition: all 0.3s ease; 
+            font-size: 14px;
         }
-        .mode-btn.active { background-color: #0097D7; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .mode-btn.active { 
+            background-color: #0097D7; 
+            color: white; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
 
-        .input-stack { display: flex; flex-direction: column; gap: 12px; width: 100%; }
-        .input-group { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+        .input-stack {
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+            width: 100%;
+        }
         
-        label { font-size: 13px; font-weight: 700; color: #555; margin-left: 2px; }
+        .input-group { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 6px; 
+            width: 100%; 
+        }
+        
+        label { 
+            font-size: 13px; 
+            font-weight: 700; 
+            color: #555; 
+            margin-left: 2px; 
+            display: flex; 
+            justify-content: space-between; 
+        }
         
         input, select { 
-            padding: 12px; font-size: 16px; 
-            border: 1px solid #e0e0e0; border-radius: 8px; width: 100%; background-color: #fdfdfd;
+            padding: 12px; 
+            font-size: 16px; 
+            border: 1px solid #e0e0e0; 
+            border-radius: 8px; 
+            width: 100%; 
+            background-color: #fdfdfd;
             transition: border-color 0.2s;
         }
-        input:focus, select:focus { border-color: #0097D7; outline: none; }
-        
-        .warning-msg {
-            display: none; color: #dc3545; font-size: 12px; margin-top: 4px;
-            background-color: #fff5f5; padding: 8px; border-radius: 4px; border: 1px solid #ffcccc;
+        input:focus, select:focus { 
+            border-color: #0097D7; 
+            outline: none; 
         }
         
-        /* 下載按鈕組 */
-        .btn-group-vertical { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 10px; }
+        .warning-msg {
+            display: none; 
+            color: #dc3545; 
+            font-size: 12px; 
+            margin-top: 4px;
+            background-color: #fff5f5; 
+            padding: 8px; 
+            border-radius: 4px; 
+            border: 1px solid #ffcccc;
+        }
+        
+        /* =========================================
+           5. 按鈕樣式
+           ========================================= */
+        .btn-group-vertical { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+            width: 100%; 
+            margin-top: 10px; 
+        }
         .btn-base {
-            padding: 0 20px; font-size: 15px; font-weight: bold; color: white;
-            border: none; border-radius: 8px; cursor: pointer; height: 48px; width: 100%;
-            display: flex; align-items: center; justify-content: center; transition: filter 0.2s;
+            padding: 0 20px; 
+            font-size: 15px; 
+            font-weight: bold; 
+            color: white;
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            height: 48px; 
+            width: 100%;
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            transition: filter 0.2s;
         }
         .btn-base:hover { filter: brightness(1.1); }
         .btn-base:disabled { background-color: #ccc !important; cursor: wait; }
+        
         .btn-png { background-color: #0097D7; }
         .btn-svg { background-color: #20c997; } 
-        .btn-hint { font-size: 12px; color: #888; text-align: center; margin-top: -5px; }
+        
+        .btn-hint { 
+            font-size: 12px; 
+            color: #888; 
+            text-align: center; 
+            margin-top: -5px; 
+        }
 
-        /* 預覽區 */
+        /* =========================================
+           6. 預覽區樣式
+           ========================================= */
         .preview-wrapper {
-            width: 100%; max-width: 600px; margin: 0 auto;
+            width: 100%; 
+            max-width: 600px; 
+            margin: 0 auto;
             text-align: center;
         }
         .preview-label {
-            font-size: 12px; color: #888; margin-bottom: 5px; font-weight: bold; letter-spacing: 1px;
+            font-size: 12px; 
+            color: #888; 
+            margin-bottom: 5px; 
+            font-weight: bold; 
+            letter-spacing: 1px;
             text-transform: uppercase;
         }
         .preview-container { 
-            position: relative; width: 100%; aspect-ratio: 1000 / 665;
-            border: 1px solid #eee; background-color: #fff; box-sizing: border-box; 
-            border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-            display: flex; align-items: center; justify-content: center;
+            position: relative; 
+            width: 100%; 
+            aspect-ratio: 1000 / 665;
+            border: 1px solid #eee; 
+            background-color: #fff; 
+            box-sizing: border-box; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
             overflow: hidden;
         }
-        #svg-preview-box { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-        #svg-preview-box svg { width: 100%; height: 100%; display: block; }
-
-        /* Footer & Modal */
-        .footer { margin-top: auto; padding: 40px 20px; width: 100%; text-align: center; color: #666; font-size: 13px; line-height: 1.6; border-top: 1px solid #eee; background: white; }
-        .footer-link-blue { color: #0097D7; text-decoration: none; font-weight: bold; }
-        
-        #loading-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.98); z-index: 999;
-            display: flex; justify-content: center; align-items: center;
-            flex-direction: column; font-weight: bold; color: #0097D7;
+        #svg-preview-box { 
+            width: 100%; 
+            height: 100%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        #svg-preview-box svg { 
+            width: 100%; 
+            height: 100%; 
+            display: block; 
         }
 
-        /* === 開發日誌 Modal 樣式 === */
+        /* =========================================
+           7. Footer 樣式
+           ========================================= */
+        .footer { 
+            margin-top: auto; 
+            padding: 40px 20px; 
+            width: 100%; 
+            text-align: center; 
+            color: #666; 
+            font-size: 13px; 
+            line-height: 1.6; 
+            border-top: 1px solid #eee; 
+            background: white; 
+        }
+        .footer-link-blue { 
+            color: #0097D7; 
+            text-decoration: none; 
+            font-weight: bold; 
+        }
+
+        /* =========================================
+           8. 開發日誌 Modal 視窗樣式
+           ========================================= */
         .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.5); z-index: 2000;
-            justify-content: center; align-items: center;
+            display: none; /* 預設隱藏 */
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); 
+            z-index: 2000;
+            justify-content: center; 
+            align-items: center;
             backdrop-filter: blur(3px);
         }
         .modal-box {
-            background: white; width: 90%; max-width: 600px; max-height: 80vh;
-            border-radius: 12px; padding: 25px;
+            background: white; 
+            width: 90%; 
+            max-width: 600px; 
+            max-height: 80vh;
+            border-radius: 12px; 
+            padding: 25px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            overflow-y: auto; position: relative;
-            font-family: 'Noto Sans TC', sans-serif; text-align: left;
+            overflow-y: auto; 
+            position: relative;
+            font-family: 'Noto Sans TC', sans-serif; 
+            text-align: left;
         }
         .modal-header {
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            border-bottom: 1px solid #eee; 
+            padding-bottom: 15px; 
+            margin-bottom: 15px;
         }
-        .modal-title { font-size: 20px; font-weight: bold; color: #0097D7; }
-        .close-btn { background: none; border: none; font-size: 24px; color: #999; cursor: pointer; }
+        .modal-title { 
+            font-size: 20px; 
+            font-weight: bold; 
+            color: #0097D7; 
+        }
+        .close-btn { 
+            background: none; 
+            border: none; 
+            font-size: 24px; 
+            color: #999; 
+            cursor: pointer; 
+        }
         .close-btn:hover { color: #333; }
         
+        /* 日誌內容樣式 */
         .log-entry { margin-bottom: 20px; }
-        .log-date { font-size: 12px; color: #888; font-weight: bold; margin-bottom: 4px; display: block;}
-        .log-ver { font-size: 16px; font-weight: bold; color: #333; display: flex; align-items: center; gap: 8px;}
-        .log-tag { font-size: 11px; padding: 2px 6px; border-radius: 4px; color: white; vertical-align: middle; }
+        .log-date { 
+            font-size: 12px; 
+            color: #888; 
+            font-weight: bold; 
+            margin-bottom: 4px; 
+            display: block;
+        }
+        .log-ver { 
+            font-size: 16px; 
+            font-weight: bold; 
+            color: #333; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px;
+        }
+        .log-tag { 
+            font-size: 11px; 
+            padding: 2px 6px; 
+            border-radius: 4px; 
+            color: white; 
+            vertical-align: middle; 
+        }
         .tag-feat { background: #20c997; } 
         .tag-init { background: #6c757d; } 
-        .log-desc { margin-top: 5px; font-size: 14px; color: #555; line-height: 1.6; }
-        .log-desc ul { margin: 5px 0 0 20px; padding: 0; }
+        
+        .log-desc { 
+            margin-top: 5px; 
+            font-size: 14px; 
+            color: #555; 
+            line-height: 1.6; 
+        }
+        .log-desc ul { 
+            margin: 5px 0 0 20px; 
+            padding: 0; 
+        }
         .log-desc li { margin-bottom: 3px; }
     </style>
 </head>
 <body>
 
-    <div id="loading-overlay"><div>系統載入中...<br><span style="font-size:12px;color:#999">Initialize...</span></div></div>
+    <div id="loading-overlay">
+        <div>系統載入中...<br><span style="font-size:12px;color:#999">Initialize...</span></div>
+    </div>
 
     <nav class="navbar">
         <span class="nav-main">JCI Logo Generator v3.0</span>
@@ -227,14 +446,16 @@
 
     <div class="footer">
         <div class="footer-block">
-            Designed & Developed by <a href="#" class="footer-link-blue">Chenghui Lin</a><br>
+            Designed & Developed by 
+            <a href="https://www.facebook.com/zhenhui.lin/" target="_blank" class="footer-link-blue">Chenghui Lin</a>
+            <br>
             (2023 President, JCI Dayuan)
         </div>
         <div class="footer-block">
-            <a href="#" class="footer-link-blue">桃園市大園國際青年商會</a> 製作
+            <a href="https://www.jcidayuan.site/" target="_blank" class="footer-link-blue">桃園市大園國際青年商會</a> 製作
         </div>
         <div style="margin-top: 15px; font-size: 12px;">
-            <a href="javascript:void(0)" onclick="openModal()" style="color:#999; text-decoration:none; border-bottom:1px dashed #ccc;">
+            <a href="javascript:void(0)" onclick="openModal()" style="color:#0097D7; text-decoration:none; border-bottom:1px dashed #0097D7; font-weight:bold;">
                 📜 查看開發日誌 (Changelog)
             </a>
         </div>
@@ -259,7 +480,9 @@
                         </ul>
                     </div>
                 </div>
+                
                 <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+                
                 <div class="log-entry">
                     <span class="log-date">2026/01/08</span>
                     <div class="log-ver"><span class="log-tag tag-feat">V2.0</span> 向量革命</div>
@@ -271,7 +494,9 @@
                         </ul>
                     </div>
                 </div>
+                
                 <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+                
                 <div class="log-entry">
                     <span class="log-date">2025/12/04</span>
                     <div class="log-ver"><span class="log-tag tag-init">V1.0</span> 原型誕生</div>
@@ -283,6 +508,7 @@
                         </ul>
                     </div>
                 </div>
+                
                 <div style="margin-top:20px; text-align:center; color:#ccc; font-size:12px;">
                     Developed with ❤️ by JCI Dayuan
                 </div>
@@ -291,13 +517,13 @@
     </div>
 
     <script>
-        // ==========================================
-        // ★★★ CONFIG (v3.0 最終參數鎖定) ★★★
-        // ==========================================
+        // ----------------------------------------
+        // 1. CONFIG 設定檔 (V3.0 Final)
+        // ----------------------------------------
         const CONFIG = {
             baseWidth: 1000,
             
-            // 1. 世界總會
+            // 世界總會版 (維持原樣)
             world: {
                 line1: { xPercent: 11.8, yPercent: 64.8, sizePx: 81, spacing: -0.3 },
                 line2: { xPercent: 11.8, yPercent: 73.6, sizePx: 81, spacing: -0.3 },
@@ -305,23 +531,22 @@
                 defaultText2: ""
             },
 
-            // 2. 台灣總會 (參數鎖定)
+            // 台灣總會版 (嚴格鎖定參數)
             taiwan: {
-                // ★ 英文設定
+                // 英文 Line 1
                 line1: { 
-                    startX: 11.829,   // 英文起始位置
-                    limitX: 74.8,   // 英文邊界位置
+                    startX: 11.829, 
+                    limitX: 74.8, 
                     yPercent: 65.9, 
                     sizePx: 74 
-                }, 
-                
-                // ★ 中文設定
+                },
+                // 中文 Line 2
                 line2: { 
-                    startX: 12.2,   // 中文起始位置
-                    limitX: 75.2,   // 中文邊界位置
+                    startX: 12.2, 
+                    limitX: 75.2, 
                     yPercent: 75.0, 
                     sizePx: 56 
-                }, 
+                },
                 
                 defaultText1: "Hsinchu,Taiwan",
                 defaultText2: "新竹市新竹國際青年商會"
@@ -334,15 +559,27 @@
         let fontTwCh = null;  // Noto Sans TC
         let svgForDownload = "";
 
-        // Modal 視窗控制
-        function openModal() { document.getElementById('devLogModal').style.display = 'flex'; document.body.style.overflow = 'hidden'; }
-        function closeModalBtn() { document.getElementById('devLogModal').style.display = 'none'; document.body.style.overflow = 'auto'; }
-        function closeModal(e) { if (e.target.id === 'devLogModal') closeModalBtn(); }
+        // ----------------------------------------
+        // 2. Modal 視窗控制
+        // ----------------------------------------
+        function openModal() { 
+            document.getElementById('devLogModal').style.display = 'flex'; 
+            document.body.style.overflow = 'hidden'; 
+        }
+        function closeModalBtn() { 
+            document.getElementById('devLogModal').style.display = 'none'; 
+            document.body.style.overflow = 'auto'; 
+        }
+        function closeModal(e) { 
+            if (e.target.id === 'devLogModal') closeModalBtn(); 
+        }
 
-        // 載入字體與初始化 (含進度顯示)
+        // ----------------------------------------
+        // 3. 初始化與字體載入 (Window Onload)
+        // ----------------------------------------
         window.onload = function() {
-            let loadedCount = 0;
-            const totalFonts = 3;
+            let loadedCount = 0; 
+            const totalFonts = 3; 
             const statusBox = document.querySelector('#loading-overlay div');
 
             const updateStatus = (fontName, success) => {
@@ -356,31 +593,33 @@
                     </span>
                 `;
 
-                if(loadedCount >= totalFonts) {
-                    setTimeout(() => {
-                        document.getElementById('loading-overlay').style.display = 'none';
-                        switchMode('world');
-                    }, 500);
+                if(loadedCount >= totalFonts) { 
+                    setTimeout(() => { 
+                        document.getElementById('loading-overlay').style.display = 'none'; 
+                        switchMode('world'); 
+                    }, 500); 
                 }
             };
 
-            // 確保路徑正確
-            opentype.load('PlusJakartaSans-Bold.ttf', function(err, font) {
-                if (err) updateStatus('PlusJakartaSans', false);
+            opentype.load('PlusJakartaSans-Bold.ttf', function(err, font) { 
+                if (err) updateStatus('PlusJakartaSans', false); 
                 else { fontWorld = font; updateStatus('PlusJakartaSans', true); }
             });
 
-            opentype.load('arialbd.ttf', function(err, font) {
-                if (err) updateStatus('Arial', false);
+            opentype.load('arialbd.ttf', function(err, font) { 
+                if (err) updateStatus('Arial', false); 
                 else { fontTwEn = font; updateStatus('Arial', true); }
             });
 
-            opentype.load('NotoSansTC-Bold.ttf', function(err, font) {
-                if (err) updateStatus('NotoSansTC', false);
+            opentype.load('NotoSansTC-Bold.ttf', function(err, font) { 
+                if (err) updateStatus('NotoSansTC', false); 
                 else { fontTwCh = font; updateStatus('NotoSansTC', true); }
             });
         };
 
+        // ----------------------------------------
+        // 4. 模式切換 (Switch Mode)
+        // ----------------------------------------
         function switchMode(mode) {
             currentMode = mode;
             document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
@@ -401,9 +640,12 @@
             updatePreview();
         }
 
+        // ----------------------------------------
+        // 5. 更新預覽 (Update Preview) - 核心繪圖邏輯
+        // ----------------------------------------
         async function updatePreview() {
             const fWorld = fontWorld || fontTwEn; 
-            const fTwEn = fontTwEn || fontWorld;
+            const fTwEn = fontTwEn || fontWorld; 
             const fTwCh = fontTwCh || fontWorld;
 
             if (!fWorld && !fTwEn) return;
@@ -426,16 +668,16 @@
 
                 svgEl.querySelectorAll('path, rect, polygon, circle').forEach(el => {
                     const fill = el.getAttribute('fill');
-                    if (fill && fill.toLowerCase() === bgToRemove.toLowerCase()) {
-                        if (!(fileName.includes("Inverted") && bgToRemove === '#1c1f2a')) el.style.display = 'none';
+                    if (fill && fill.toLowerCase() === bgToRemove.toLowerCase()) { 
+                        if (!(fileName.includes("Inverted") && bgToRemove === '#1c1f2a')) el.style.display = 'none'; 
                     }
                     if (uiBgMode === 'jci-black' && fill && fill.toLowerCase() === '#1c1f2a') el.style.display = 'none';
                 });
 
                 let width = 1000, height = 665;
-                if (svgEl.hasAttribute('viewBox')) {
-                    const vb = svgEl.getAttribute('viewBox').split(/[\s,]+/);
-                    width = parseFloat(vb[2]); height = parseFloat(vb[3]);
+                if (svgEl.hasAttribute('viewBox')) { 
+                    const vb = svgEl.getAttribute('viewBox').split(/[\s,]+/); 
+                    width = parseFloat(vb[2]); height = parseFloat(vb[3]); 
                 }
                 const scaleFactor = width / CONFIG.baseWidth;
 
@@ -446,6 +688,7 @@
                 const g = doc.createElementNS("http://www.w3.org/2000/svg", "g");
 
                 if (currentMode === 'world') {
+                    // 世界版繪圖
                     const p1 = createStandardPath(t1, settings.line1, fWorld, width, height, scaleFactor, textColor);
                     const p2 = createStandardPath(t2, settings.line2, fWorld, width, height, scaleFactor, textColor);
                     g.innerHTML = p1 + p2;
@@ -454,8 +697,8 @@
                         const w1 = fWorld.getAdvanceWidth(t1, settings.line1.sizePx * scaleFactor);
                         document.getElementById('lengthWarning').style.display = (w1 > width * 0.55) ? 'block' : 'none';
                     }
-
                 } else {
+                    // 台灣版繪圖 (獨立座標 + Smart Fit)
                     document.getElementById('lengthWarning').style.display = 'none';
                     
                     const l1Start = width * (settings.line1.startX / 100);
@@ -476,34 +719,34 @@
                 svgForDownload = new XMLSerializer().serializeToString(svgEl);
                 document.getElementById('svg-preview-box').innerHTML = svgForDownload;
 
-            } catch (err) {
-                console.error(err);
-            }
+            } catch (err) { console.error(err); }
         }
 
+        // ----------------------------------------
+        // 6. 字體路徑產生器 (Path Generators)
+        // ----------------------------------------
         function createStandardPath(text, config, font, width, height, scale, color) {
             if (!text || !font) return "";
             const startX = width * (config.xPercent / 100);
             const fontSize = config.sizePx * scale;
             const baselineY = (height * (config.yPercent / 100)) + fontSize;
-            const extraSpacing = (config.spacing || 0) * scale;
-            return generatePathString(text, font, startX, baselineY, fontSize, extraSpacing, color);
+            return generatePathString(text, font, startX, baselineY, fontSize, (config.spacing || 0) * scale, color);
         }
 
         function createSmartFitPath(text, config, font, startX, height, scale, targetWidth, color) {
             if (!text || !font) return "";
             const stdFontSize = config.sizePx * scale;
             const rawWidth = font.getAdvanceWidth(text, stdFontSize);
-            let finalFontSize = stdFontSize;
+            let finalFontSize = stdFontSize; 
             let finalSpacing = 0;
 
             if (rawWidth < targetWidth) {
+                // 分散對齊邏輯 (Dispersion)
                 const gap = targetWidth - rawWidth;
                 const charCount = text.length;
-                if (charCount > 1) {
-                    finalSpacing = gap / (charCount - 1);
-                }
+                if (charCount > 1) { finalSpacing = gap / (charCount - 1); }
             } else {
+                // 自動縮放邏輯 (Auto Scale)
                 const ratio = targetWidth / rawWidth;
                 finalFontSize = stdFontSize * ratio;
             }
@@ -520,8 +763,8 @@
                 const glyph = glyphs[i];
                 combinedPath.extend(glyph.getPath(cursorX, y, fontSize));
                 cursorX += (glyph.advanceWidth * (fontSize / font.unitsPerEm));
-                if (i < glyphs.length - 1) {
-                    cursorX += font.getKerningValue(glyph, glyphs[i + 1]) * (fontSize / font.unitsPerEm);
+                if (i < glyphs.length - 1) { 
+                    cursorX += font.getKerningValue(glyph, glyphs[i + 1]) * (fontSize / font.unitsPerEm); 
                 }
                 cursorX += spacing;
             }
@@ -529,39 +772,55 @@
             return combinedPath.toSVG(2);
         }
 
+        // ----------------------------------------
+        // 7. 檔案下載邏輯 (Fix for Safari V2.0 Logic)
+        // ----------------------------------------
         async function downloadFile(type) {
             if (!svgForDownload) return;
             const name = "JCI_" + (document.getElementById('chapterInput1').value || "Logo").replace(/[^a-zA-Z0-9]/g, "_");
             const btn = document.querySelector('.btn-' + type), oldText = btn.innerText;
             btn.innerText = "處理中..."; btn.disabled = true;
 
+            // ★ Safari Fix: 先同步開啟視窗 (避免被擋)
+            const isMobile = /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
+            let mobileWin = null;
+            if (isMobile && type === 'png') {
+                mobileWin = window.open('', '_blank');
+                if(mobileWin) {
+                    mobileWin.document.write('<div style="text-align:center;padding-top:20px;font-family:sans-serif;">正在產生圖片，請稍候...<br>(Generating Image...)</div>');
+                }
+            }
+
             try {
                 let svgProcessed = svgForDownload;
                 const parts = document.getElementById('logoSelect').value.split('|');
                 const bgToRemove = parts[1];
 
+                // 處理 PNG 透明背景
                 if (type === 'png' && bgToRemove !== 'none') {
                     const doc = new DOMParser().parseFromString(svgProcessed, "image/svg+xml");
                     doc.querySelectorAll('rect, path, polygon').forEach(el => {
                         const fill = el.getAttribute('fill');
-                        if (fill && (fill.toLowerCase() === '#1c1f2a' || fill.toLowerCase() === '#000000' || fill.toLowerCase() === 'black')) {
-                            el.remove();
-                        }
+                        if (fill && (fill.toLowerCase() === '#1c1f2a' || fill.toLowerCase() === '#000000' || fill.toLowerCase() === 'black')) el.remove();
                     });
                     svgProcessed = new XMLSerializer().serializeToString(doc.documentElement);
                 }
-
-                if (!svgProcessed.includes('xmlns=')) {
-                    svgProcessed = svgProcessed.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
+                // 補上 xmlns 避免錯誤
+                if (!svgProcessed.includes('xmlns=')) { 
+                    svgProcessed = svgProcessed.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" '); 
                 }
 
                 if (type === 'svg') {
+                    // SVG 直接下載
                     const blob = new Blob([svgProcessed], {type: "image/svg+xml;charset=utf-8"});
                     triggerDL(URL.createObjectURL(blob), name + ".svg");
                 } else {
+                    // PNG 轉檔下載
                     const scale = parseInt(document.getElementById('sizeSelect').value);
                     const img = new Image();
                     const url = URL.createObjectURL(new Blob([svgProcessed], {type: "image/svg+xml;charset=utf-8"}));
+                    
+                    // 等待圖片載入 (Async)
                     await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = url; });
 
                     const vbMatch = svgProcessed.match(/viewBox="([^"]+)"/);
@@ -574,19 +833,25 @@
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                     URL.revokeObjectURL(url);
                     
-                    // ★ 關鍵修正：使用 toBlob + createObjectURL (Safari 友善)
-                    canvas.toBlob(function(blob) {
-                        if(blob) {
-                            const blobUrl = URL.createObjectURL(blob);
-                            triggerDL(blobUrl, name + ".png");
-                        } else {
-                            alert("圖片生成失敗，請重試");
-                        }
-                    }, 'image/png');
+                    const pngData = canvas.toDataURL("image/png");
+
+                    // 手機版: 寫入剛剛開好的視窗 (V2.0 Logic)
+                    if (isMobile && mobileWin) {
+                        mobileWin.document.body.innerHTML = `
+                            <div style="text-align:center; padding:20px; font-family:sans-serif;">
+                                <h3 style="color:#0097D7">長按圖片即可儲存<br>(Long Press to Save)</h3>
+                                <img src="${pngData}" style="width:100%; box-shadow:0 5px 15px rgba(0,0,0,0.2); border-radius:8px;">
+                            </div>
+                        `;
+                    } else { 
+                        // 電腦版: 觸發下載
+                        triggerDL(pngData, name + ".png"); 
+                    }
                 }
             } catch (e) { 
-                console.error(e);
-                alert("下載發生錯誤: " + e.message);
+                console.error(e); 
+                alert("錯誤: " + e.message);
+                if(mobileWin) mobileWin.close();
             } finally { 
                 btn.innerText = oldText; btn.disabled = false; 
             }
@@ -598,10 +863,8 @@
             document.body.appendChild(a); 
             a.click(); 
             document.body.removeChild(a); 
-            // 延遲釋放，確保 iOS 有足夠時間處理 Blob
-            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            if(url.startsWith('blob:')) setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
     </script>
 </body>
-
 </html>
