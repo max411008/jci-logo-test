@@ -7,7 +7,6 @@
     
     <script>
         window.onerror = function(msg, url, line) {
-            // 忽略 ResizeObserver 的良性錯誤
             if (msg.indexOf('ResizeObserver') !== -1) return;
             console.log('系統訊息: ' + msg);
         };
@@ -16,9 +15,9 @@
     <script src="https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js"></script>
 
     <style>
-        /* =========================================
-           1. 字體定義 (必須確保檔案存在於同目錄)
-           ========================================= */
+        /* ==========================================================================
+           1. 字體定義 (Fonts)
+           ========================================================================== */
         @font-face { 
             font-family: 'Plus Jakarta Sans'; 
             src: url('PlusJakartaSans-Bold.ttf') format('truetype'); 
@@ -35,9 +34,9 @@
             font-weight: bold; 
         }
         
-        /* =========================================
-           2. 全域基礎樣式
-           ========================================= */
+        /* ==========================================================================
+           2. 全域基礎樣式 (Global Styles)
+           ========================================================================== */
         * { 
             box-sizing: border-box; 
             -webkit-tap-highlight-color: transparent; 
@@ -55,9 +54,9 @@
             color: #333;
         }
 
-        /* =========================================
-           3. 導覽列與載入畫面
-           ========================================= */
+        /* ==========================================================================
+           3. 導覽列 (Navbar)
+           ========================================================================== */
         .navbar {
             width: 100%; 
             background-color: #0097D7; 
@@ -82,6 +81,9 @@
             font-weight: normal; 
         }
 
+        /* ==========================================================================
+           4. 載入畫面 (Loading Overlay)
+           ========================================================================== */
         #loading-overlay {
             position: fixed; 
             top: 0; 
@@ -98,9 +100,9 @@
             color: #0097D7;
         }
 
-        /* =========================================
-           4. 控制面板區塊 (Controls)
-           ========================================= */
+        /* ==========================================================================
+           5. 控制面板區塊 (Controls)
+           ========================================================================== */
         .controls { 
             background: white; 
             padding: 20px; 
@@ -185,9 +187,9 @@
             border: 1px solid #ffcccc;
         }
         
-        /* =========================================
-           5. 按鈕樣式
-           ========================================= */
+        /* ==========================================================================
+           6. 按鈕樣式 (Buttons)
+           ========================================================================== */
         .btn-group-vertical { 
             display: flex; 
             flex-direction: column; 
@@ -223,9 +225,9 @@
             margin-top: -5px; 
         }
 
-        /* =========================================
-           6. 預覽區樣式
-           ========================================= */
+        /* ==========================================================================
+           7. 預覽區樣式 (Preview Area)
+           ========================================================================== */
         .preview-wrapper {
             width: 100%; 
             max-width: 600px; 
@@ -267,9 +269,9 @@
             display: block; 
         }
 
-        /* =========================================
-           7. Footer 樣式
-           ========================================= */
+        /* ==========================================================================
+           8. Footer 樣式
+           ========================================================================== */
         .footer { 
             margin-top: auto; 
             padding: 40px 20px; 
@@ -287,11 +289,11 @@
             font-weight: bold; 
         }
 
-        /* =========================================
-           8. 開發日誌 Modal 視窗樣式
-           ========================================= */
+        /* ==========================================================================
+           9. 開發日誌 Modal 視窗樣式
+           ========================================================================== */
         .modal-overlay {
-            display: none; /* 預設隱藏 */
+            display: none; 
             position: fixed; 
             top: 0; 
             left: 0; 
@@ -338,7 +340,7 @@
         }
         .close-btn:hover { color: #333; }
         
-        /* 日誌內容樣式 */
+        /* 日誌內容排版 */
         .log-entry { margin-bottom: 20px; }
         .log-date { 
             font-size: 12px; 
@@ -376,6 +378,50 @@
             padding: 0; 
         }
         .log-desc li { margin-bottom: 3px; }
+
+        /* ==========================================================================
+           10. ★★★ 手機版圖片預覽 Overlay 樣式 (V2.0 邏輯) ★★★
+           ========================================================================== */
+        .mobile-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto;
+            text-align: center;
+        }
+        .mobile-overlay img {
+            max-width: 100%;
+            max-height: 70vh;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        .mobile-overlay p {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        .mobile-overlay .close-overlay {
+            padding: 12px 30px;
+            background: #0097D7;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,151,215,0.3);
+        }
     </style>
 </head>
 <body>
@@ -480,7 +526,6 @@
                         </ul>
                     </div>
                 </div>
-                
                 <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
                 
                 <div class="log-entry">
@@ -494,7 +539,6 @@
                         </ul>
                     </div>
                 </div>
-                
                 <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
                 
                 <div class="log-entry">
@@ -523,7 +567,7 @@
         const CONFIG = {
             baseWidth: 1000,
             
-            // 世界總會版 (維持原樣)
+            // 世界總會版
             world: {
                 line1: { xPercent: 11.8, yPercent: 64.8, sizePx: 81, spacing: -0.3 },
                 line2: { xPercent: 11.8, yPercent: 73.6, sizePx: 81, spacing: -0.3 },
@@ -601,6 +645,7 @@
                 }
             };
 
+            // 載入字體檔案 (必須確保這三個檔案在目錄中)
             opentype.load('PlusJakartaSans-Bold.ttf', function(err, font) { 
                 if (err) updateStatus('PlusJakartaSans', false); 
                 else { fontWorld = font; updateStatus('PlusJakartaSans', true); }
@@ -773,23 +818,13 @@
         }
 
         // ----------------------------------------
-        // 7. 檔案下載邏輯 (Fix for Safari V2.0 Logic)
+        // 7. 檔案下載邏輯 (V2.0 Logic - Mobile Overlay)
         // ----------------------------------------
         async function downloadFile(type) {
             if (!svgForDownload) return;
             const name = "JCI_" + (document.getElementById('chapterInput1').value || "Logo").replace(/[^a-zA-Z0-9]/g, "_");
             const btn = document.querySelector('.btn-' + type), oldText = btn.innerText;
             btn.innerText = "處理中..."; btn.disabled = true;
-
-            // ★ Safari Fix: 先同步開啟視窗 (避免被擋)
-            const isMobile = /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
-            let mobileWin = null;
-            if (isMobile && type === 'png') {
-                mobileWin = window.open('', '_blank');
-                if(mobileWin) {
-                    mobileWin.document.write('<div style="text-align:center;padding-top:20px;font-family:sans-serif;">正在產生圖片，請稍候...<br>(Generating Image...)</div>');
-                }
-            }
 
             try {
                 let svgProcessed = svgForDownload;
@@ -820,7 +855,7 @@
                     const img = new Image();
                     const url = URL.createObjectURL(new Blob([svgProcessed], {type: "image/svg+xml;charset=utf-8"}));
                     
-                    // 等待圖片載入 (Async)
+                    // 等待圖片載入
                     await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = url; });
 
                     const vbMatch = svgProcessed.match(/viewBox="([^"]+)"/);
@@ -835,23 +870,25 @@
                     
                     const pngData = canvas.toDataURL("image/png");
 
-                    // 手機版: 寫入剛剛開好的視窗 (V2.0 Logic)
-                    if (isMobile && mobileWin) {
-                        mobileWin.document.body.innerHTML = `
-                            <div style="text-align:center; padding:20px; font-family:sans-serif;">
-                                <h3 style="color:#0097D7">長按圖片即可儲存<br>(Long Press to Save)</h3>
-                                <img src="${pngData}" style="width:100%; box-shadow:0 5px 15px rgba(0,0,0,0.2); border-radius:8px;">
-                            </div>
+                    // ★★★ 手機版 / LINE 內建瀏覽器邏輯 (V2.0 Mobile Overlay) ★★★
+                    if (/Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                        const overlay = document.createElement('div');
+                        overlay.className = 'mobile-overlay';
+                        overlay.innerHTML = `
+                            <p style="font-weight:bold; color:#0097D7; font-size:18px;">圖片已生成！</p>
+                            <p>請「長按下方圖片」並選擇「儲存圖片」<br>(Long press image to save)</p>
+                            <img src="${pngData}">
+                            <button class="close-overlay" onclick="this.parentElement.remove()">完成並返回 (Close)</button>
                         `;
+                        document.body.appendChild(overlay);
                     } else { 
-                        // 電腦版: 觸發下載
+                        // 電腦版直接下載
                         triggerDL(pngData, name + ".png"); 
                     }
                 }
             } catch (e) { 
                 console.error(e); 
-                alert("錯誤: " + e.message);
-                if(mobileWin) mobileWin.close();
+                alert("錯誤: " + e.message); 
             } finally { 
                 btn.innerText = oldText; btn.disabled = false; 
             }
