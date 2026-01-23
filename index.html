@@ -7,7 +7,6 @@
     
     <script>
         window.onerror = function(msg, url, line) {
-            // 忽略 ResizeObserver 的良性錯誤
             if (msg.indexOf('ResizeObserver') !== -1) return;
             console.log('系統訊息: ' + msg);
         };
@@ -18,16 +17,11 @@
     <style>
         /* ==========================================================================
            1. 字體定義 (Fonts)
-           使用開源字體 Plus Jakarta Sans 與 Noto Sans TC，確保版權合法
+           僅使用開源字體 Plus Jakarta Sans 與 Noto Sans TC，100% 版權合法
            ========================================================================== */
         @font-face { 
             font-family: 'Plus Jakarta Sans'; 
             src: url('PlusJakartaSans-Bold.ttf') format('truetype'); 
-            font-weight: bold; 
-        }
-        @font-face { 
-            font-family: 'Arial Bold'; 
-            src: url('arialbd.ttf') format('truetype'); 
             font-weight: bold; 
         }
         @font-face { 
@@ -37,7 +31,7 @@
         }
         
         /* ==========================================================================
-           2. 全域基礎樣式 (Global Styles)
+           2. 全域基礎樣式
            ========================================================================== */
         * { 
             box-sizing: border-box; 
@@ -57,7 +51,7 @@
         }
 
         /* ==========================================================================
-           3. 導覽列 (Navbar)
+           3. 導覽列
            ========================================================================== */
         .navbar {
             width: 100%; 
@@ -84,7 +78,7 @@
         }
 
         /* ==========================================================================
-           4. 載入畫面 (Loading Overlay)
+           4. 載入畫面
            ========================================================================== */
         #loading-overlay {
             position: fixed; 
@@ -103,7 +97,7 @@
         }
 
         /* ==========================================================================
-           5. 控制面板區塊 (Controls)
+           5. 控制面板區塊
            ========================================================================== */
         .controls { 
             background: white; 
@@ -190,7 +184,7 @@
         }
         
         /* ==========================================================================
-           6. 按鈕樣式 (Buttons)
+           6. 按鈕樣式
            ========================================================================== */
         .btn-group-vertical { 
             display: flex; 
@@ -228,7 +222,7 @@
         }
 
         /* ==========================================================================
-           7. 預覽區樣式 (Preview Area)
+           7. 預覽區樣式
            ========================================================================== */
         .preview-wrapper {
             width: 100%; 
@@ -272,7 +266,7 @@
         }
 
         /* ==========================================================================
-           8. Footer 樣式 (連結樣式優化 - 點點線)
+           8. Footer 樣式 (點點超連結)
            ========================================================================== */
         .footer { 
             margin-top: auto; 
@@ -289,7 +283,6 @@
             color: #0097D7; 
             text-decoration: none; 
             font-weight: bold;
-            /* 修正：更明顯的虛線底線 */
             border-bottom: 2px dotted #0097D7; 
             padding-bottom: 2px;
             transition: all 0.2s;
@@ -308,7 +301,7 @@
         }
 
         /* ==========================================================================
-           9. Modal 彈出視窗樣式 (通用於開發日誌與圖片預覽)
+           9. Modal 彈出視窗樣式
            ========================================================================== */
         .modal-overlay {
             display: none; 
@@ -410,7 +403,7 @@
         }
         
         /* ==========================================================================
-           10. 手機版圖片預覽 Overlay 樣式 (V2.0 邏輯)
+           10. 手機版 Overlay 樣式
            ========================================================================== */
         .mobile-overlay {
             position: fixed;
@@ -550,12 +543,11 @@
                 
                 <div class="log-entry">
                     <span class="log-date">2026/01/23 - Present</span>
-                    <div class="log-ver"><span class="log-tag tag-fix">V3.1</span> CS6 相容與終極優化</div>
+                    <div class="log-ver"><span class="log-tag tag-fix">V3.1</span> CS6 相容性修正</div>
                     <div class="log-desc">
-                        針對設計軟體 (AI CS6) 讀取問題與介面細節的深度優化版本。
+                        針對設計軟體 (AI CS6) 讀取問題的深度優化版本。
                         <ul>
-                            <li><strong>🎨 解決 AI CS6 全黑問題：</strong>導入「樣式烘焙 (Style Baking)」技術。下載 SVG 前，強制讀取所有 CSS 顏色並寫入標籤屬性 (fill/stroke)，徹底解決舊版 Illustrator 開啟檔案時顏色消失的問題。</li>
-                            <li><strong>UI/UX 優化：</strong>修正預設文字為 Dayuan,Taiwan；優化超連結樣式為虛線顯示，提升視覺辨識度。</li>
+                            <li><strong>🎨 解決 AI CS6 全黑問題：</strong>導入「樣式烘焙 (Style Baking)」技術。下載 SVG 前，強制讀取所有 CSS 顏色並寫入標籤屬性 (fill/stroke)，徹底解決舊版 Illustrator 開啟時顏色消失的問題。</li>
                         </ul>
                     </div>
                 </div>
@@ -571,7 +563,7 @@
                             <li><strong>⚖️ 合規性升級：</strong>全面採用 <strong>Plus Jakarta Sans</strong> 開源字體（此為 JCI 世界總會規定之標準字體），搭配 <strong>Noto Sans TC</strong> (思源黑體) 顯示中文，確保 100% 版權合法與安全。</li>
                             <li><strong>🇹🇼 台灣總會版：</strong>實作獨有的雙行排版，並針對中英文採用獨立座標系統，確保像素級對齊。</li>
                             <li><strong>📱 行動裝置優化：</strong>修復 LINE 與 Safari 內建瀏覽器的下載問題 (使用 Overlay 預覽模式)。</li>
-                            <li><strong>Smart Layout 引擎：</strong>開發紅線演算法，文字過長自動縮小，確保不超出盾牌邊界。</li>
+                            <li><strong>Smart Layout 引擎：</strong>開發紅線演算法，文字過長自動縮小，確保不超出盾牌邊界；並具備分散對齊功能。</li>
                         </ul>
                     </div>
                 </div>
@@ -663,8 +655,8 @@
         };
 
         let currentMode = 'world'; 
-        let fontWorld = null; // Plus Jakarta Sans (取代 Arial)
-        let fontTwCh = null;  // Noto Sans TC
+        let fontWorld = null; // Plus Jakarta Sans (World & Taiwan English)
+        let fontTwCh = null;  // Noto Sans TC (Taiwan Chinese)
         let svgForDownload = "";
 
         // ----------------------------------------
@@ -882,7 +874,7 @@
         }
 
         // ----------------------------------------
-        // 7. 檔案下載邏輯 (Fix for LINE/Safari + AI CS6)
+        // 7. 檔案下載邏輯 (Fix for LINE/Safari + AI CS6 Style Baking)
         // ----------------------------------------
         async function downloadFile(type) {
             if (!svgForDownload) return;
@@ -952,6 +944,7 @@
                     const scale = parseInt(document.getElementById('sizeSelect').value);
                     const img = new Image();
                     
+                    // Canvas 讀取需要重新建立 Blob URL
                     const url = URL.createObjectURL(new Blob([svgProcessed], {type: "image/svg+xml;charset=utf-8"}));
                     
                     await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = url; });
