@@ -19,15 +19,11 @@
         /* ==========================================================================
            1. 字體定義 (Fonts)
            使用開源字體 Plus Jakarta Sans 與 Noto Sans TC，確保版權合法
+           (已移除 Arial 相關定義)
            ========================================================================== */
         @font-face { 
             font-family: 'Plus Jakarta Sans'; 
             src: url('PlusJakartaSans-Bold.ttf') format('truetype'); 
-            font-weight: bold; 
-        }
-        @font-face { 
-            font-family: 'Arial Bold'; 
-            src: url('arialbd.ttf') format('truetype'); 
             font-weight: bold; 
         }
         @font-face { 
@@ -290,9 +286,17 @@
             text-decoration: none; 
             font-weight: bold; 
         }
+        .footer-disclaimer {
+            margin-top: 12px;
+            font-size: 12px;
+            color: #999;
+            font-weight: normal;
+            border-top: 1px dashed #eee;
+            padding-top: 15px;
+        }
 
         /* ==========================================================================
-           9. Modal 彈出視窗樣式 (通用於開發日誌與圖片預覽)
+           9. Modal 彈出視窗樣式 (通用於開發日誌)
            ========================================================================== */
         .modal-overlay {
             display: none; 
@@ -382,18 +386,9 @@
         }
         .log-desc li { margin-bottom: 3px; }
 
-        /* 圖片下載預覽提示樣式 */
-        .save-hint { 
-            text-align: center; 
-            padding: 10px; 
-            background: #e3f2fd; 
-            border-radius: 8px; 
-            color: #0d47a1; 
-            font-weight: bold; 
-            margin-bottom: 15px; 
-        }
-        
-        /* 手機版 Overlay 樣式 (V2.0 邏輯) */
+        /* ==========================================================================
+           10. 手機版圖片預覽 Overlay 樣式 (V2.0 邏輯)
+           ========================================================================== */
         .mobile-overlay {
             position: fixed;
             top: 0;
@@ -456,13 +451,13 @@
         <div class="input-stack">
             <div class="input-group">
                 <label id="label-line1">分會名稱 (Line 1)</label>
-                <input type="text" id="chapterInput1" value="Dayuan" oninput="updatePreview()">
+                <input type="text" id="chapterInput1" value="Dayuan, Taiwan" oninput="updatePreview()">
                 <div id="lengthWarning" class="warning-msg">⚠️ 文字過長 (超出盾牌範圍)</div>
             </div>
             
             <div class="input-group">
                 <label id="label-line2">分會名稱 (Line 2, 選填)</label>
-                <input type="text" id="chapterInput2" value="" placeholder="(選填)" oninput="updatePreview()">
+                <input type="text" id="chapterInput2" value="大園國際青年商會" placeholder="(選填)" oninput="updatePreview()">
             </div>
 
             <div style="display:flex; gap:10px;">
@@ -507,11 +502,14 @@
             Designed & Developed by 
             <a href="https://www.facebook.com/zhenhui.lin/" target="_blank" class="footer-link-blue">Chenghui Lin</a>
             <br>
-            (2023 President, JCI Dayuan)
+            (2023 President, <a href="https://www.jcidayuan.site/" target="_blank" class="footer-link-blue">JCI Dayuan</a>)
         </div>
-        <div class="footer-block">
-            <a href="https://www.jcidayuan.site/" target="_blank" class="footer-link-blue">桃園市大園國際青年商會</a> 製作
+        
+        <div class="footer-disclaimer">
+            Copyright © 2026 Chenghui Lin. All rights reserved.<br>
+            本工具由個人開發免費供會友使用，嚴禁盜用程式碼並宣稱為自身作品
         </div>
+
         <div style="margin-top: 15px; font-size: 12px;">
             <a href="javascript:void(0)" onclick="openModal('devLog')" style="color:#0097D7; text-decoration:none; border-bottom:1px dashed #0097D7; font-weight:bold;">
                 📜 查看開發日誌 (Changelog)
@@ -527,15 +525,15 @@
             </div>
             <div class="modal-content">
                 <div class="log-entry">
-                    <span class="log-date">2026/01/15 - Present</span>
+                    <span class="log-date">2026/01/23 - Present</span>
                     <div class="log-ver"><span class="log-tag tag-feat">V3.0</span> 完整功能發布</div>
                     <div class="log-desc">
                         專為台灣總會量身打造的在地化版本，集成了智慧排版、商用字體與行動裝置優化。
                         <ul>
+                            <li><strong>⚖️ 合規性升級：</strong>全面採用 <strong>Plus Jakarta Sans</strong> 開源字體（此為 JCI 世界總會規定之標準字體），搭配 <strong>Noto Sans TC</strong> (思源黑體) 顯示中文，確保 100% 版權合法與安全。</li>
+                            <li><strong>🎨 AI CS6 支援：</strong>在 SVG 輸出中強制寫入 XML 宣告與標準檔頭，解決 Adobe Illustrator CS6 開啟時顏色跑掉的問題。</li>
+                            <li><strong>📱 行動裝置優化：</strong>修復 LINE 與 Safari 內建瀏覽器的下載問題 (使用 Overlay 預覽模式)。</li>
                             <li><strong>🇹🇼 台灣總會版：</strong>實作獨有的雙行排版，並針對中英文採用獨立座標系統，確保像素級對齊。</li>
-                            <li><strong>📱 行動裝置支援：</strong>修復 LINE 與 Safari 內建瀏覽器的下載問題，新增圖片預覽彈窗。</li>
-                            <li><strong>⚖️ 合規性升級：</strong>全面採用 <strong>Plus Jakarta Sans</strong> (世界總會規定之字體) 與 <strong>Noto Sans TC</strong> (中文)，確保 100% 版權合法。</li>
-                            <li><strong>Smart Layout 引擎：</strong>開發紅線演算法，文字過長自動縮小，確保不超出盾牌邊界；並具備分散對齊功能。</li>
                         </ul>
                     </div>
                 </div>
@@ -569,22 +567,8 @@
                 </div>
                 
                 <div style="margin-top:20px; text-align:center; color:#ccc; font-size:12px;">
-                    Developed with ❤️ by JCI Dayuan
+                    Developed with ❤️ by Chenghui Lin
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="imagePreviewModal" class="modal-overlay" onclick="closeModal(event, 'imagePreview')">
-        <div class="modal-box" style="text-align:center;">
-            <div class="modal-header">
-                <div class="modal-title">圖片已建立</div>
-                <button class="close-btn" onclick="closeModalBtn('imagePreview')">×</button>
-            </div>
-            <div class="save-hint">👇 請「長按圖片」選擇儲存至相簿</div>
-            <img id="generatedImage" src="" style="max-width:100%; border-radius:8px; border:1px solid #ddd; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
-            <div style="margin-top:15px;">
-                <button class="btn-base btn-png" onclick="closeModalBtn('imagePreview')">關閉視窗</button>
             </div>
         </div>
     </div>
@@ -621,8 +605,8 @@
                     sizePx: 56 
                 },
                 
-                defaultText1: "Dayuan,Taiwan",
-                defaultText2: "桃園市大園國際青年商會"
+                defaultText1: "Dayuan, Taiwan",
+                defaultText2: "大園國際青年商會"
             }
         };
 
@@ -846,7 +830,7 @@
         }
 
         // ----------------------------------------
-        // 7. 檔案下載邏輯 (Fix for LINE/Safari)
+        // 7. 檔案下載邏輯 (Fix for LINE/Safari + AI CS6)
         // ----------------------------------------
         async function downloadFile(type) {
             if (!svgForDownload) return;
@@ -871,9 +855,17 @@
                     });
                     svgProcessed = new XMLSerializer().serializeToString(doc.documentElement);
                 }
-                // 補上 xmlns 避免錯誤
-                if (!svgProcessed.includes('xmlns=')) { 
-                    svgProcessed = svgProcessed.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" '); 
+
+                // ★ AI CS6 相容性：加入 XML Header
+                if (!svgProcessed.includes('<?xml')) {
+                    svgProcessed = '<?xml version="1.0" encoding="utf-8"?>\n' + 
+                                   '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' + 
+                                   svgProcessed;
+                }
+                if (!svgProcessed.includes('xmlns="http://www.w3.org/2000/svg"')) { 
+                    svgProcessed = svgProcessed.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" '); 
+                } else if (!svgProcessed.includes('version=')) {
+                    svgProcessed = svgProcessed.replace('<svg ', '<svg version="1.1" ');
                 }
 
                 if (type === 'svg') {
@@ -884,7 +876,10 @@
                     // PNG 生成邏輯
                     const scale = parseInt(document.getElementById('sizeSelect').value);
                     const img = new Image();
+                    
+                    // Canvas 讀取需要重新建立 Blob URL
                     const url = URL.createObjectURL(new Blob([svgProcessed], {type: "image/svg+xml;charset=utf-8"}));
+                    
                     await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = url; });
 
                     const vbMatch = svgProcessed.match(/viewBox="([^"]+)"/);
