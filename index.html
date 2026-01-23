@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JCI Logo Generator v3.0</title>
+    <title>JCI Logo Generator v3.1</title>
     
     <script>
         window.onerror = function(msg, url, line) {
-            // 忽略 ResizeObserver 的良性錯誤
             if (msg.indexOf('ResizeObserver') !== -1) return;
             console.log('系統訊息: ' + msg);
         };
@@ -18,12 +17,16 @@
     <style>
         /* ==========================================================================
            1. 字體定義 (Fonts)
-           使用開源字體 Plus Jakarta Sans 與 Noto Sans TC，確保版權合法
-           (已移除 Arial 相關定義)
+           使用開源字體 Plus Jakarta Sans 與 Noto Sans TC
            ========================================================================== */
         @font-face { 
             font-family: 'Plus Jakarta Sans'; 
             src: url('PlusJakartaSans-Bold.ttf') format('truetype'); 
+            font-weight: bold; 
+        }
+        @font-face { 
+            font-family: 'Arial Bold'; 
+            src: url('arialbd.ttf') format('truetype'); 
             font-weight: bold; 
         }
         @font-face { 
@@ -33,7 +36,7 @@
         }
         
         /* ==========================================================================
-           2. 全域基礎樣式 (Global Styles)
+           2. 全域基礎樣式
            ========================================================================== */
         * { 
             box-sizing: border-box; 
@@ -53,7 +56,7 @@
         }
 
         /* ==========================================================================
-           3. 導覽列 (Navbar)
+           3. 導覽列
            ========================================================================== */
         .navbar {
             width: 100%; 
@@ -80,7 +83,7 @@
         }
 
         /* ==========================================================================
-           4. 載入畫面 (Loading Overlay)
+           4. 載入畫面
            ========================================================================== */
         #loading-overlay {
             position: fixed; 
@@ -99,7 +102,7 @@
         }
 
         /* ==========================================================================
-           5. 控制面板區塊 (Controls)
+           5. 控制面板區塊
            ========================================================================== */
         .controls { 
             background: white; 
@@ -186,7 +189,7 @@
         }
         
         /* ==========================================================================
-           6. 按鈕樣式 (Buttons)
+           6. 按鈕樣式
            ========================================================================== */
         .btn-group-vertical { 
             display: flex; 
@@ -224,7 +227,7 @@
         }
 
         /* ==========================================================================
-           7. 預覽區樣式 (Preview Area)
+           7. 預覽區樣式
            ========================================================================== */
         .preview-wrapper {
             width: 100%; 
@@ -268,7 +271,7 @@
         }
 
         /* ==========================================================================
-           8. Footer 樣式
+           8. Footer 樣式 (連結樣式優化)
            ========================================================================== */
         .footer { 
             margin-top: auto; 
@@ -284,7 +287,13 @@
         .footer-link-blue { 
             color: #0097D7; 
             text-decoration: none; 
-            font-weight: bold; 
+            font-weight: bold;
+            /* 新增明顯的虛線底線 */
+            border-bottom: 1px dashed #0097D7; 
+            padding-bottom: 1px;
+        }
+        .footer-link-blue:hover {
+            border-bottom-style: solid;
         }
         .footer-disclaimer {
             margin-top: 12px;
@@ -296,7 +305,7 @@
         }
 
         /* ==========================================================================
-           9. Modal 彈出視窗樣式 (通用於開發日誌)
+           9. Modal 彈出視窗樣式
            ========================================================================== */
         .modal-overlay {
             display: none; 
@@ -386,6 +395,17 @@
         }
         .log-desc li { margin-bottom: 3px; }
 
+        /* 圖片下載預覽提示樣式 */
+        .save-hint { 
+            text-align: center; 
+            padding: 10px; 
+            background: #e3f2fd; 
+            border-radius: 8px; 
+            color: #0d47a1; 
+            font-weight: bold; 
+            margin-bottom: 15px; 
+        }
+        
         /* ==========================================================================
            10. 手機版圖片預覽 Overlay 樣式 (V2.0 邏輯)
            ========================================================================== */
@@ -438,7 +458,7 @@
     </div>
 
     <nav class="navbar">
-        <span class="nav-main">JCI Logo Generator v3.0</span>
+        <span class="nav-main">JCI Logo Generator v3.1</span>
         <span class="nav-sub">Official & Safe Font Edition</span>
     </nav>
 
@@ -451,13 +471,13 @@
         <div class="input-stack">
             <div class="input-group">
                 <label id="label-line1">分會名稱 (Line 1)</label>
-                <input type="text" id="chapterInput1" value="Dayuan, Taiwan" oninput="updatePreview()">
+                <input type="text" id="chapterInput1" value="Dayuan,Taiwan" oninput="updatePreview()">
                 <div id="lengthWarning" class="warning-msg">⚠️ 文字過長 (超出盾牌範圍)</div>
             </div>
             
             <div class="input-group">
                 <label id="label-line2">分會名稱 (Line 2, 選填)</label>
-                <input type="text" id="chapterInput2" value="大園國際青年商會" placeholder="(選填)" oninput="updatePreview()">
+                <input type="text" id="chapterInput2" value="桃園市大園國際青年商會" placeholder="(選填)" oninput="updatePreview()">
             </div>
 
             <div style="display:flex; gap:10px;">
@@ -511,7 +531,7 @@
         </div>
 
         <div style="margin-top: 15px; font-size: 12px;">
-            <a href="javascript:void(0)" onclick="openModal('devLog')" style="color:#0097D7; text-decoration:none; border-bottom:1px dashed #0097D7; font-weight:bold;">
+            <a href="javascript:void(0)" onclick="openModal('devLog')" class="footer-link-blue" style="font-weight:normal; border-bottom-style:dashed;">
                 📜 查看開發日誌 (Changelog)
             </a>
         </div>
@@ -524,16 +544,31 @@
                 <button class="close-btn" onclick="closeModalBtn('devLog')">×</button>
             </div>
             <div class="modal-content">
+                
                 <div class="log-entry">
                     <span class="log-date">2026/01/23 - Present</span>
+                    <div class="log-ver"><span class="log-tag tag-fix">V3.1</span> 軟體相容性與細節優化</div>
+                    <div class="log-desc">
+                        針對設計軟體與介面細節的深度優化版本。
+                        <ul>
+                            <li><strong>🎨 AI CS6 支援：</strong>在 SVG 輸出中強制寫入 XML 宣告與標準檔頭，解決 Adobe Illustrator CS6 開啟時顏色跑掉 (全黑) 的問題。</li>
+                            <li><strong>UI 優化：</strong>調整預設文字 (Dayuan,Taiwan) 與超連結樣式，提升操作體驗。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+
+                <div class="log-entry">
+                    <span class="log-date">2026/01/15</span>
                     <div class="log-ver"><span class="log-tag tag-feat">V3.0</span> 完整功能發布</div>
                     <div class="log-desc">
                         專為台灣總會量身打造的在地化版本，集成了智慧排版、商用字體與行動裝置優化。
                         <ul>
                             <li><strong>⚖️ 合規性升級：</strong>全面採用 <strong>Plus Jakarta Sans</strong> 開源字體（此為 JCI 世界總會規定之標準字體），搭配 <strong>Noto Sans TC</strong> (思源黑體) 顯示中文，確保 100% 版權合法與安全。</li>
-                            <li><strong>🎨 AI CS6 支援：</strong>在 SVG 輸出中強制寫入 XML 宣告與標準檔頭，解決 Adobe Illustrator CS6 開啟時顏色跑掉的問題。</li>
-                            <li><strong>📱 行動裝置優化：</strong>修復 LINE 與 Safari 內建瀏覽器的下載問題 (使用 Overlay 預覽模式)。</li>
                             <li><strong>🇹🇼 台灣總會版：</strong>實作獨有的雙行排版，並針對中英文採用獨立座標系統，確保像素級對齊。</li>
+                            <li><strong>📱 行動裝置優化：</strong>修復 LINE 與 Safari 內建瀏覽器的下載問題 (使用 Overlay 預覽模式)。</li>
+                            <li><strong>Smart Layout 引擎：</strong>開發紅線演算法，文字過長自動縮小，確保不超出盾牌邊界；並具備分散對齊功能。</li>
                         </ul>
                     </div>
                 </div>
@@ -573,9 +608,23 @@
         </div>
     </div>
 
+    <div id="imagePreviewModal" class="modal-overlay" onclick="closeModal(event, 'imagePreview')">
+        <div class="modal-box" style="text-align:center;">
+            <div class="modal-header">
+                <div class="modal-title">圖片已建立</div>
+                <button class="close-btn" onclick="closeModalBtn('imagePreview')">×</button>
+            </div>
+            <div class="save-hint">👇 請「長按圖片」選擇儲存至相簿</div>
+            <img id="generatedImage" src="" style="max-width:100%; border-radius:8px; border:1px solid #ddd; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+            <div style="margin-top:15px;">
+                <button class="btn-base btn-png" onclick="closeModalBtn('imagePreview')">關閉視窗</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ----------------------------------------
-        // 1. CONFIG 設定檔 (V3.0 Final)
+        // 1. CONFIG 設定檔 (V3.1 Final)
         // ----------------------------------------
         const CONFIG = {
             baseWidth: 1000,
@@ -605,8 +654,8 @@
                     sizePx: 56 
                 },
                 
-                defaultText1: "Dayuan, Taiwan",
-                defaultText2: "大園國際青年商會"
+                defaultText1: "Dayuan,Taiwan",
+                defaultText2: "桃園市大園國際青年商會"
             }
         };
 
@@ -811,6 +860,7 @@
             return generatePathString(text, font, startX, baselineY, finalFontSize, finalSpacing, color);
         }
 
+        // ★ AI CS6 相容性核心：強制在 Path 中寫入 fill 屬性
         function generatePathString(text, font, x, y, fontSize, spacing, color) {
             const combinedPath = new opentype.Path();
             let cursorX = x;
@@ -825,8 +875,9 @@
                 }
                 cursorX += spacing;
             }
-            combinedPath.fill = color;
-            return combinedPath.toSVG(2);
+            // opentype.toSVG 預設不會把 fill 屬性寫進字串，我們手動替換注入
+            let svgPath = combinedPath.toSVG(2);
+            return svgPath.replace(/<path/g, `<path fill="${color}"`);
         }
 
         // ----------------------------------------
@@ -862,6 +913,7 @@
                                    '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' + 
                                    svgProcessed;
                 }
+                // 確保 SVG 標籤包含必要的命名空間
                 if (!svgProcessed.includes('xmlns="http://www.w3.org/2000/svg"')) { 
                     svgProcessed = svgProcessed.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" '); 
                 } else if (!svgProcessed.includes('version=')) {
