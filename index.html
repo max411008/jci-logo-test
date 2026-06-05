@@ -571,13 +571,13 @@
                 <!-- V3.3 (New) -->
                 <div class="log-entry">
                     <span class="log-date">2026/06/05</span>
-                    <div class="log-ver"><span class="log-tag tag-fix">V3.3</span> 台灣版輸出比例對齊設計稿</div>
+                    <div class="log-ver"><span class="log-tag tag-fix">V3.3</span> 台灣版分會名文字排版校正</div>
                     <div class="log-desc">
-                        修正台灣總會版下載成品比例不符官方設計稿的問題。
+                        對齊官方設計稿，僅校正台灣總會版分會名的文字排版，畫布維持原本正方 (1:1) 比例。
                         <ul>
-                            <li><strong>📐 4:3 比例校正：</strong>原本輸出沿用 JCI 原始 SVG 的正方 (1:1) 畫布，導致 logo 偏上、下方大量留白。本次將台灣版輸出畫布對齊官方設計稿的 4:3 橫式比例（設計稿 3401×2551，比例 1.3333），讓 logo 與分會名版面與設計稿一致。</li>
-                            <li><strong>🖼️ 不動原始素材：</strong>僅在輸出/預覽階段動態包一層 4:3 外框並將內容置中，JCI 原始 logo 向量檔保持原樣，可安全回滾。</li>
-                            <li><strong>👀 預覽同步：</strong>預覽框比例隨實際輸出畫布即時調整，所見即所得。</li>
+                            <li><strong>🔤 英文字距校正：</strong>英文行（如 Dayuan,Taiwan）字元間距自然緊湊，逗號後不留多餘空格。</li>
+                            <li><strong>🈶 中文字級放大：</strong>中文行字級明顯大於英文行（約 1.27 倍），主從層次與設計稿一致。</li>
+                            <li><strong>🎨 配色不變：</strong>維持 JCI Blue 品牌色。</li>
                         </ul>
                     </div>
                 </div>
@@ -921,35 +921,8 @@
 
                 svgEl.appendChild(g);
 
-                // V3.3 修正：台灣版輸出 artboard 對齊設計稿 PDF 4:3 比例 (3401.57 x 2551.18 → 1.3333)。
-                // 原 logo SVG 為正方 viewBox (867.4 x 867.4)，直接輸出會是 1:1 不符設計稿。
-                // 作法：保留原高度、向左右加寬成 4:3 (width = height * 4/3)，把原內容置中包進外層 artboard，
-                //       不動 source SVG 原檔 (per Codex PM PRE-REVIEW 建議：1156.53 x 867.4 base，中 3x ≈ 3469 x 2602)。
-                if (currentMode === 'taiwan') {
-                    const targetW = Math.round((height * 4 / 3) * 100) / 100; // 4:3 寬度
-                    const dx = (targetW - width) / 2;                          // 水平置中位移
-
-                    const wrap = doc.createElementNS("http://www.w3.org/2000/svg", "g");
-                    wrap.setAttribute("transform", "translate(" + dx + ",0)");
-                    // 把 svgEl 既有子節點 (logo + 文字 group) 全部搬進 wrap，置中於新 artboard
-                    while (svgEl.firstChild) { wrap.appendChild(svgEl.firstChild); }
-                    svgEl.appendChild(wrap);
-
-                    svgEl.setAttribute("viewBox", "0 0 " + targetW + " " + height);
-                    if (svgEl.hasAttribute("width"))  svgEl.setAttribute("width", targetW);
-                    if (svgEl.hasAttribute("height")) svgEl.setAttribute("height", height);
-                }
-
                 svgForDownload = new XMLSerializer().serializeToString(svgEl);
                 document.getElementById('svg-preview-box').innerHTML = svgForDownload;
-
-                // 預覽框比例同步實際輸出 viewBox，避免預覽與下載成品比例不一致
-                const finalVb = svgEl.getAttribute('viewBox');
-                if (finalVb) {
-                    const fv = finalVb.split(/[\s,]+/);
-                    const aw = parseFloat(fv[2]), ah = parseFloat(fv[3]);
-                    if (aw && ah) document.getElementById('previewContainer').style.aspectRatio = aw + ' / ' + ah;
-                }
 
             } catch (err) { console.error(err); }
         }
