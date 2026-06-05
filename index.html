@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JCI Logo Generator v3.2</title>
+    <title>JCI Logo Generator v3.3</title>
     
     <!-- 系統錯誤捕捉 -->
     <script>
@@ -469,7 +469,7 @@
 
     <!-- 頁面導覽列 -->
     <nav class="navbar">
-        <span class="nav-main">JCI Logo Generator v3.2</span>
+        <span class="nav-main">JCI Logo Generator v3.3</span>
         <span class="nav-sub">Official & Safe Font Edition</span>
     </nav>
 
@@ -665,11 +665,11 @@
        ========================================== -->
     <script>
         // ----------------------------------------
-        // 1. CONFIG 設定檔 (V3.2 Final)
+        // 1. CONFIG 設定檔 (V3.3 - 對照設計稿 PDF 調整台灣版字元間距與字級比例)
         // ----------------------------------------
         const CONFIG = {
             baseWidth: 1000,
-            
+
             // 世界總會版
             world: {
                 line1: { xPercent: 11.8, yPercent: 64.8, sizePx: 81, spacing: -0.3 },
@@ -679,22 +679,26 @@
             },
 
             // 台灣總會版 (嚴格鎖定參數)
+            // V3.3: 英文行用自然字距 (justify:false)，逗號後不再被撐開空隙；
+            //       中文行維持撐滿寬度 (justify:true) 使其明顯大於英文行，對齊 PDF 設計稿。
             taiwan: {
-                // 英文 Line 1
-                line1: { 
-                    startX: 11.829, 
-                    limitX: 74.8, 
-                    yPercent: 65.9, 
-                    sizePx: 74 
+                // 英文 Line 1 — 自然字距，不強制撐滿 (逗號後緊湊)，字級略小於中文行
+                line1: {
+                    startX: 11.829,
+                    limitX: 74.8,
+                    yPercent: 67.5,
+                    sizePx: 48,
+                    justify: false
                 },
-                // 中文 Line 2
-                line2: { 
-                    startX: 12.2, 
-                    limitX: 75.2, 
-                    yPercent: 75.0, 
-                    sizePx: 56 
+                // 中文 Line 2 — 撐滿較寬目標使字級明顯大於英文行 (對齊 PDF)
+                line2: {
+                    startX: 12.0,
+                    limitX: 80.0,
+                    yPercent: 75.0,
+                    sizePx: 80,
+                    justify: true
                 },
-                
+
                 defaultText1: "Dayuan,Taiwan",
                 defaultText2: "桃園市大園國際青年商會"
             }
@@ -921,10 +925,17 @@
             if (!text || !font) return "";
             const stdFontSize = config.sizePx * scale;
             const rawWidth = font.getAdvanceWidth(text, stdFontSize);
-            let finalFontSize = stdFontSize; 
+            let finalFontSize = stdFontSize;
             let finalSpacing = 0;
 
-            if (rawWidth < targetWidth) {
+            // V3.3: justify === false (英文行) 用自然字距，不插入撐滿空隙，
+            //       僅在超出 limit 時等比縮小 — 逗號後保持緊湊。
+            // justify !== false (中文行) 維持撐滿目標寬度的舊行為使字級明顯較大。
+            if (config.justify === false) {
+                if (rawWidth > targetWidth) {
+                    finalFontSize = stdFontSize * (targetWidth / rawWidth);
+                }
+            } else if (rawWidth < targetWidth) {
                 const gap = targetWidth - rawWidth;
                 const charCount = text.length;
                 if (charCount > 1) { finalSpacing = gap / (charCount - 1); }
@@ -932,7 +943,7 @@
                 const ratio = targetWidth / rawWidth;
                 finalFontSize = stdFontSize * ratio;
             }
-            const baselineY = (height * (config.yPercent / 100)) + stdFontSize; 
+            const baselineY = (height * (config.yPercent / 100)) + stdFontSize;
             return generatePathString(text, font, startX, baselineY, finalFontSize, finalSpacing, color);
         }
 
