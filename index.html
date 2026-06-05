@@ -917,24 +917,32 @@
                 } else {
                     document.getElementById('lengthWarning').style.display = 'none';
 
-                    // V3.3: 正方畫布 — 把設計稿佈局置中放進正方 (1:1) 畫布。
-                    // 1) 把方形來源 Logo art 用 transform 嵌進正方畫布的 logo 帶 (置中偏上)。
+                    // V3.4: 正方畫布 — 把設計稿佈局置中放進正方 (1:1) 畫布。
+                    // ★ 盾牌變形修復：盾牌 / JCI 字標必須等比 (uniform) 縮放，X、Y 用同一個
+                    //   scale，絕不可各自拉伸。做法：取來源 SVG 的 logo art tight bbox，用單一
+                    //   uniform scale = min(目標寬/來源寬, 目標高/來源高) 等比縮放，再水平置中、
+                    //   垂直定位到設計稿的 logo 高度帶。
                     const cw = settings.squareCanvas.w, ch = settings.squareCanvas.h;
                     const la = settings.logoArt;
-                    // 來源 art bbox (來源 viewBox 座標)
+                    // 來源 art tight bbox (來源 viewBox 座標)
                     const sx0 = la.srcX0 * width, sx1 = la.srcX1 * width;
                     const sy0 = la.srcY0 * height, sy1 = la.srcY1 * height;
-                    // 目標 art bbox (正方畫布座標)
+                    const srcW = sx1 - sx0, srcH = sy1 - sy0;
+                    // 目標 art 容許帶 (正方畫布座標)
                     const dx0 = la.dstX0 * cw, dx1 = la.dstX1 * cw;
                     const dy0 = la.dstY0 * ch, dy1 = la.dstY1 * ch;
-                    const sxScale = (dx1 - dx0) / (sx1 - sx0);
-                    const syScale = (dy1 - dy0) / (sy1 - sy0);
-                    const txx = dx0 - sx0 * sxScale;
-                    const tyy = dy0 - sy0 * syScale;
+                    const dstW = dx1 - dx0, dstH = dy1 - dy0;
+                    // ★ 單一 uniform scale：等比塞進目標帶，取較小者保證不溢出 + 不變形
+                    const uScale = Math.min(dstW / srcW, dstH / srcH);
+                    // 縮放後 art 實際尺寸
+                    const artW = srcW * uScale, artH = srcH * uScale;
+                    // 水平置中於目標帶；垂直定位到目標帶頂端 (設計稿 logo 帶上緣對齊)
+                    const txx = dx0 + (dstW - artW) / 2 - sx0 * uScale;
+                    const tyy = dy0 + (dstH - artH) / 2 - sy0 * uScale;
 
-                    // 把原 Logo 子節點搬進 transform 群組
+                    // 把原 Logo 子節點搬進 transform 群組 (等比 scale)
                     const logoG = doc.createElementNS("http://www.w3.org/2000/svg", "g");
-                    logoG.setAttribute("transform", `translate(${txx} ${tyy}) scale(${sxScale} ${syScale})`);
+                    logoG.setAttribute("transform", `translate(${txx} ${tyy}) scale(${uScale})`);
                     const kids = Array.from(svgEl.childNodes);
                     kids.forEach(n => logoG.appendChild(n));
                     svgEl.appendChild(logoG);
