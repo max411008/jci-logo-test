@@ -716,7 +716,11 @@
                     limitX: 50.32,
                     baselineYPercent: 58.47,   // 字底 (正方畫布座標) — v5: startX -3px 對齊設計稿英文左緣 (design x=311)
                     sizePx: 54,
-                    justify: false
+                    justify: false,
+                    // v6: 逗號後 "Taiwan" 段字型差校正 (正方畫布 px)。Plus Jakarta Sans 的
+                    //   Taiwan advance 比設計稿緊，整段累積偏左 ~11px (render 1297 vs design 1309)。
+                    //   對逗號(含)之後每個 glyph 間隔加此額外字距撐回設計稿位置；Dayuan, 不動。
+                    postCommaSpacing: 0.60
                 },
                 // 中文 Line 2 — 字級明顯大於英文行 (對齊 PDF)，撐滿目標寬
                 line2: {
@@ -1037,10 +1041,27 @@
 
             // baselineY = 設計稿字底位置 (glyph 底)
             const baselineY = frameH * (config.baselineYPercent / 100);
+
+            // v6: 英文行逗號後 "Taiwan" 段字型差校正 —
+            //   Plus Jakarta Sans 的 Taiwan 字母 advance 比設計稿字型緊，整段累積偏左 ~11px。
+            //   只對逗號(含)之後的 glyph 加 postCommaSpacing 額外字距撐回設計稿位置；
+            //   "Dayuan," 段 (逗號前) 完全不動，左緣/逗號位置維持已對好的狀態。
+            const pcs = config.postCommaSpacing;
+            if (config.justify === false && pcs) {
+                const commaIdx = text.indexOf(',');
+                if (commaIdx >= 0) {
+                    // 對 glyph index >= commaIdx 之間的「間隔」加額外字距 (逗號之後的字母往右推)
+                    const spacingFn = (i) => (i >= commaIdx ? pcs : 0);
+                    return generatePathString(text, font, startX, baselineY, finalFontSize, spacingFn, color);
+                }
+            }
             return generatePathString(text, font, startX, baselineY, finalFontSize, finalSpacing, color);
         }
 
         function generatePathString(text, font, x, y, fontSize, spacing, color) {
+            // spacing 可為數字 (整行統一字距) 或 function(charIndex)->extra px
+            //   (用於英文行逗號後 "Taiwan" 段加寬字距校正字型差，不動 "Dayuan,")
+            const spacingAt = (typeof spacing === 'function') ? spacing : (() => spacing);
             const combinedPath = new opentype.Path();
             let cursorX = x;
             const glyphs = font.stringToGlyphs(text);
@@ -1049,10 +1070,10 @@
                 const glyph = glyphs[i];
                 combinedPath.extend(glyph.getPath(cursorX, y, fontSize));
                 cursorX += (glyph.advanceWidth * (fontSize / font.unitsPerEm));
-                if (i < glyphs.length - 1) { 
-                    cursorX += font.getKerningValue(glyph, glyphs[i + 1]) * (fontSize / font.unitsPerEm); 
+                if (i < glyphs.length - 1) {
+                    cursorX += font.getKerningValue(glyph, glyphs[i + 1]) * (fontSize / font.unitsPerEm);
                 }
-                cursorX += spacing;
+                cursorX += spacingAt(i);
             }
             combinedPath.fill = color;
             return combinedPath.toSVG(2);
