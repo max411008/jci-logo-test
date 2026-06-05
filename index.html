@@ -695,23 +695,35 @@
             },
 
             // 台灣總會版 (嚴格鎖定參數)
-            // V3.3: 英文行用自然字距 (justify:false)，逗號後不再被撐開空隙；
-            //       中文行維持撐滿寬度 (justify:true) 使其明顯大於英文行，對齊 PDF 設計稿。
+            // V3.3: 畫布維持原本正方 (1:1) 比例 — 輸出 2602x2602 (來源 SVG 867.4 x3)。
+            //   設計稿 PDF 為 4:3 橫式，但 MAX 拍板畫布固定正方，故「對齊」= 把設計稿
+            //   佈局 (上方 JCI+盾牌、下方左對齊雙行藍字) 置中放進正方畫布 (上下留白較多)。
+            //   - 用正方來源 viewBox (867.4x867.4)，所有定位以百分比表示，與該座標系無關。
+            //   - 英文行自然字距 (justify:false)，逗號後緊湊；中文行字級明顯較大並對齊 PDF。
             taiwan: {
+                // 正方畫布 (與來源 SVG viewBox 一致，3x 輸出 = 2602x2602)
+                squareCanvas: { w: 867.4, h: 867.4 },
+                // Logo art 目標帶 (正方畫布座標系，百分比；置中偏上，下方留文字空間)
+                // 來源方形 SVG art bbox: x[0.1176-0.9198] y[0.3362-0.6580] of 867.4
+                // 設計稿 logo 在 4:3 框內佔上 2/3；置中放進正方畫布上半部。
+                logoArt: {
+                    srcX0: 0.1176, srcX1: 0.9198, srcY0: 0.3362, srcY1: 0.6580,
+                    dstX0: 0.1102, dstX1: 0.8897, dstY0: 0.1300, dstY1: 0.5800
+                },
                 // 英文 Line 1 — 自然字距，不強制撐滿 (逗號後緊湊)，字級略小於中文行
                 line1: {
-                    startX: 11.829,
-                    limitX: 74.8,
-                    yPercent: 67.5,
-                    sizePx: 48,
+                    startX: 11.96,
+                    limitX: 50.32,
+                    baselineYPercent: 72.60,   // 字底 (正方畫布座標)
+                    sizePx: 54,
                     justify: false
                 },
-                // 中文 Line 2 — 撐滿較寬目標使字級明顯大於英文行 (對齊 PDF)
+                // 中文 Line 2 — 字級明顯大於英文行 (對齊 PDF)，撐滿目標寬
                 line2: {
-                    startX: 12.0,
-                    limitX: 80.0,
-                    yPercent: 75.0,
-                    sizePx: 80,
+                    startX: 11.80,
+                    limitX: 76.20,
+                    baselineYPercent: 80.50,   // 字底 (正方畫布座標)
+                    sizePx: 69,
                     justify: true
                 },
 
@@ -904,22 +916,51 @@
                     }
                 } else {
                     document.getElementById('lengthWarning').style.display = 'none';
-                    
-                    const l1Start = width * (settings.line1.startX / 100);
-                    const l1Limit = width * (settings.line1.limitX / 100);
-                    const l1Target = l1Limit - l1Start;
-                    
-                    const l2Start = width * (settings.line2.startX / 100);
-                    const l2Limit = width * (settings.line2.limitX / 100);
-                    const l2Target = l2Limit - l2Start;
 
-                    const p1 = createSmartFitPath(t1, settings.line1, fTwEn, l1Start, height, scaleFactor, l1Target, textColor);
-                    const p2 = createSmartFitPath(t2, settings.line2, fTwCh, l2Start, height, scaleFactor, l2Target, textColor);
+                    // V3.3: 正方畫布 — 把設計稿佈局置中放進正方 (1:1) 畫布。
+                    // 1) 把方形來源 Logo art 用 transform 嵌進正方畫布的 logo 帶 (置中偏上)。
+                    const cw = settings.squareCanvas.w, ch = settings.squareCanvas.h;
+                    const la = settings.logoArt;
+                    // 來源 art bbox (來源 viewBox 座標)
+                    const sx0 = la.srcX0 * width, sx1 = la.srcX1 * width;
+                    const sy0 = la.srcY0 * height, sy1 = la.srcY1 * height;
+                    // 目標 art bbox (正方畫布座標)
+                    const dx0 = la.dstX0 * cw, dx1 = la.dstX1 * cw;
+                    const dy0 = la.dstY0 * ch, dy1 = la.dstY1 * ch;
+                    const sxScale = (dx1 - dx0) / (sx1 - sx0);
+                    const syScale = (dy1 - dy0) / (sy1 - sy0);
+                    const txx = dx0 - sx0 * sxScale;
+                    const tyy = dy0 - sy0 * syScale;
 
+                    // 把原 Logo 子節點搬進 transform 群組
+                    const logoG = doc.createElementNS("http://www.w3.org/2000/svg", "g");
+                    logoG.setAttribute("transform", `translate(${txx} ${tyy}) scale(${sxScale} ${syScale})`);
+                    const kids = Array.from(svgEl.childNodes);
+                    kids.forEach(n => logoG.appendChild(n));
+                    svgEl.appendChild(logoG);
+
+                    // 設正方畫布 viewBox (1:1)
+                    svgEl.setAttribute("viewBox", `0 0 ${cw} ${ch}`);
+                    svgEl.setAttribute("width", cw);
+                    svgEl.setAttribute("height", ch);
+
+                    // 2) 文字以正方畫布座標 + 百分比定位 (字底基線對齊)
+                    const l1Start = cw * (settings.line1.startX / 100);
+                    const l1Target = cw * ((settings.line1.limitX - settings.line1.startX) / 100);
+                    const l2Start = cw * (settings.line2.startX / 100);
+                    const l2Target = cw * ((settings.line2.limitX - settings.line2.startX) / 100);
+
+                    const p1 = createSmartFitPath43(t1, settings.line1, fTwEn, l1Start, ch, l1Target, textColor);
+                    const p2 = createSmartFitPath43(t2, settings.line2, fTwCh, l2Start, ch, l2Target, textColor);
                     g.innerHTML = p1 + p2;
                 }
 
                 svgEl.appendChild(g);
+
+                // 預覽容器比例跟隨輸出 viewBox (台灣版正方，世界版維持來源方形)
+                const vbOut = (svgEl.getAttribute('viewBox') || '0 0 1000 665').split(/[\s,]+/);
+                document.getElementById('previewContainer').style.aspectRatio =
+                    `${parseFloat(vbOut[2])} / ${parseFloat(vbOut[3])}`;
 
                 svgForDownload = new XMLSerializer().serializeToString(svgEl);
                 document.getElementById('svg-preview-box').innerHTML = svgForDownload;
@@ -961,6 +1002,33 @@
                 finalFontSize = stdFontSize * ratio;
             }
             const baselineY = (height * (config.yPercent / 100)) + stdFontSize;
+            return generatePathString(text, font, startX, baselineY, finalFontSize, finalSpacing, color);
+        }
+
+        // V3.3: 台灣版專用 — 以正方畫布座標 (cw=ch=867.4) 作業，
+        //   字底基線以 baselineYPercent 定位，不再加 scaleFactor。
+        function createSmartFitPath43(text, config, font, startX, frameH, targetWidth, color) {
+            if (!text || !font) return "";
+            const stdFontSize = config.sizePx;
+            const rawWidth = font.getAdvanceWidth(text, stdFontSize);
+            let finalFontSize = stdFontSize;
+            let finalSpacing = 0;
+
+            if (config.justify === false) {
+                // 英文行: 自然字距，逗號後緊湊；僅超出 limit 才等比縮小
+                if (rawWidth > targetWidth) {
+                    finalFontSize = stdFontSize * (targetWidth / rawWidth);
+                }
+            } else if (rawWidth < targetWidth) {
+                // 中文行: 撐滿目標寬度 (分散對齊)
+                const charCount = text.length;
+                if (charCount > 1) { finalSpacing = (targetWidth - rawWidth) / (charCount - 1); }
+            } else {
+                finalFontSize = stdFontSize * (targetWidth / rawWidth);
+            }
+
+            // baselineY = 設計稿字底位置 (glyph 底)
+            const baselineY = frameH * (config.baselineYPercent / 100);
             return generatePathString(text, font, startX, baselineY, finalFontSize, finalSpacing, color);
         }
 
