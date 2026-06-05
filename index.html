@@ -712,17 +712,17 @@
                 },
                 // 英文 Line 1 — 自然字距，不強制撐滿 (逗號後緊湊)，字級略小於中文行
                 line1: {
-                    startX: 11.96,
+                    startX: 11.845,
                     limitX: 50.32,
-                    baselineYPercent: 58.47,   // 字底 (正方畫布座標) — v4: 上移 8px 對齊設計稿英文 baseline
+                    baselineYPercent: 58.47,   // 字底 (正方畫布座標) — v5: startX -3px 對齊設計稿英文左緣 (design x=311)
                     sizePx: 54,
                     justify: false
                 },
                 // 中文 Line 2 — 字級明顯大於英文行 (對齊 PDF)，撐滿目標寬
                 line2: {
-                    startX: 11.80,
-                    limitX: 76.20,
-                    baselineYPercent: 66.21,   // 字底 (正方畫布座標) — v4: 上移 17px 對齊設計稿中文 baseline
+                    startX: 11.954,
+                    limitX: 76.58,
+                    baselineYPercent: 66.21,   // 字底 (正方畫布座標) — v5: startX +4px 對齊設計稿中文左緣 (design x=307) + limitX +10px 收尾對齊
                     sizePx: 69,
                     justify: true
                 },
